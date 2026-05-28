@@ -1,0 +1,24 @@
+name: "CodeQL Analysis"
+
+on:
+  push:
+    branches:
+      - dev
+      - main
+  pull_request:
+    types:
+      - opened
+      - reopened
+      - synchronize
+  workflow_dispatch:
+  schedule:
+    # 11:15 PM UTC every Sunday
+    - cron:  '15 23 * * 0'
+
+jobs:
+  codeql:
+    uses: nasa/cFS/.github/workflows/codeql-reusable.yml@main
+    with: 
+      component-path: cfe
+      make: make -j8
+      test: true

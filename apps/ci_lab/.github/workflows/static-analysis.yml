@@ -1,0 +1,18 @@
+name: Reuse Static Analysis
+
+on:
+  push:
+    branches:
+      - dev
+      - main
+  pull_request:
+    types:
+      - opened
+      - reopened
+      - synchronize
+  workflow_dispatch:
+
+jobs:
+  static-analysis:
+    name: Static Analysis
+    uses: nasa/cFS/.github/workflows/static-analysis.yml@main

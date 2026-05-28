@@ -1,0 +1,17 @@
+name: Format Check
+
+on:
+  pull_request:
+    types:
+      - opened
+      - reopened
+      - synchronize
+  workflow_dispatch:
+  schedule:
+    # 11:30 PM UTC every Sunday
+    - cron:  '30 23 * * 0'
+
+jobs:
+  format-check:
+    name: Run format check
+    uses: nasa/cFS/.github/workflows/format-check.yml@main
