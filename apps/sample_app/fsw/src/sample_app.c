@@ -61,7 +61,6 @@ void SAMPLE_APP_Main(void)
 
   narwal_paquet.mesage = 'a';
 
-
   while (CFE_ES_RunLoop(&SAMPLE_APP_Data.RunStatus) == true) {
     CFE_ES_PerfLogExit(SAMPLE_APP_PERF_ID);
 
