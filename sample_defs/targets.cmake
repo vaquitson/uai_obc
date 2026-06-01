@@ -86,6 +86,8 @@ SET(SPACECRAFT_ID 0x42)
 # and must be loaded explicitly via startup script or command.
 # This list is effectively appended to every TGTx_APPLIST in targets.cmake.
 # Example:
+
+list(APPEND MISSION_GLOBAL_APPLIST telecom)
 list(APPEND MISSION_GLOBAL_APPLIST sample_app sample_lib)
 
 # The "MISSION_GLOBAL_STATIC_APPLIST" is similar to MISSION_GLOBAL_APPLIST
