@@ -123,6 +123,8 @@ ifneq ($(CMAKE_PREFIX_PATH),)
 PREP_OPTS += -DCMAKE_PREFIX_PATH=$(CMAKE_PREFIX_PATH)
 endif
 
+PREP_OPTS += -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
+
 all:
 	$(MAKE) --no-print-directory -C "$(O)" mission-all
 

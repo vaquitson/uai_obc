@@ -2,6 +2,7 @@
 #ifndef TELECOM_H
 #define TELECOM_H
 
-void         SAMPLE_APP_Main(void);
+void  SAMPLE_APP_Main(void);
+int   TELECOM_APP_Init(void);
 
 #endif
