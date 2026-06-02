@@ -35,8 +35,6 @@
 
 TO_LAB_GlobalData_t TO_LAB_Global;
 
-
-
 // Narwal
 typedef struct
 {
