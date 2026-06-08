@@ -36,6 +36,10 @@
 #include "sch_lab_platform_cfg.h"
 #include "sch_lab_tbl.h"
 
+
+#include "to_lab_narwal.h"
+
+
 /*
 ** Global Structure
 */

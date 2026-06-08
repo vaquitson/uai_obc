@@ -21,6 +21,7 @@ set(TO_LAB_MISSION_CONFIG_FILE_LIST
   to_lab_tbldefs.h
   to_lab_tblstruct.h
   to_lab_topicid_values.h
+  to_lab_narwal.h
 )
 
 generate_configfile_set(${TO_LAB_MISSION_CONFIG_FILE_LIST})

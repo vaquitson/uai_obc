@@ -1,26 +1,37 @@
 #include "telecom_app.h"
 #include "cfe_evs.h"
 #include "telecom_eventids.h"
+#include "telecom_errors.h"
 #include <string.h>
-
 
 TELECOM_GlobalApp_t TELECOM_Global;
 
-CFE_Status_t TELECOM_PipesInit(void){
+TELECOM_Err_t TELECOM_PipesInit(void){
   CFE_Status_t status; 
 
   status = CFE_SB_CreatePipe(&TELECOM_Global.tlm_pipe, 10, TELECOM_Global.tlm_pip_name);
   if (status != CFE_SUCCESS){
-    return status;
+    return TELECOM_ERR_TLM_PIPE;
   }
 
   status = CFE_SB_CreatePipe(&TELECOM_Global.cmd_pipe, 10, TELECOM_Global.cmd_pip_name);
   if (status != CFE_SUCCESS){
-    return status;
+    return TELECOM_ERR_CMD_PIPE;
   }
 
-  return CFE_SUCCESS;
+  return TELECOM_SUCCESS;
 }
+
+
+void TELECOM_Process_commands(void){
+
+}
+
+void TELECOM_Forward_tlm(void){
+
+}
+
+
 
 
 CFE_Status_t TELECOM_APP_Init(void){ 
