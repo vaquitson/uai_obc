@@ -2,7 +2,12 @@
 #include "cfe_evs.h"
 #include "telecom_eventids.h"
 #include "telecom_errors.h"
+#include <fcntl.h>
 #include <string.h>
+#include <stdio.h>
+
+#include "obc_hk_msg.h"
+
 
 TELECOM_GlobalApp_t TELECOM_Global;
 
@@ -36,6 +41,8 @@ void TELECOM_Forward_tlm(void){
 
 CFE_Status_t TELECOM_APP_Init(void){ 
   CFE_Status_t status;
+
+  printf("AAAAAAAAAAAAAA   %d\n", OBC_HK_TLM_MID);
 
   // start the event service
   status = CFE_EVS_Register(NULL, 0, CFE_EVS_EventFilter_BINARY);

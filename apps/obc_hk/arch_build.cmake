@@ -9,13 +9,10 @@
 ###########################################################
 
 # The list of header files that control the SAMPLE_APP configuration
-set(SAMPLE_APP_PLATFORM_CONFIG_FILE_LIST
-  sample_app_internal_cfg_values.h
-  sample_app_platform_cfg.h
-  sample_app_perfids.h
-  sample_app_msgids.h
-  sample_app_msgid_values.h
+set(OBC_HK_PLATFORM_CONFIG_FILE_LIST
+  obc_hk_msgids.h
+  obc_hk_msgid_values.h
 )
 
-generate_configfile_set(${SAMPLE_APP_PLATFORM_CONFIG_FILE_LIST})
+generate_configfile_set(${OBC_HK_PLATFORM_CONFIG_FILE_LIST})
 
