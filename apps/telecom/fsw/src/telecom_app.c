@@ -27,18 +27,6 @@ TELECOM_Err_t TELECOM_PipesInit(void){
   return TELECOM_SUCCESS;
 }
 
-
-void TELECOM_Process_commands(void){
-
-}
-
-void TELECOM_Forward_tlm(void){
-
-}
-
-
-
-
 CFE_Status_t TELECOM_APP_Init(void){ 
   CFE_Status_t status;
 
@@ -68,7 +56,7 @@ void TELECOM_AppMain(void){
   }
 
   while (CFE_ES_RunLoop(&TELECOM_Global.run_status) == true){
-
+    OS_TaskDelay(1000);
   }
 }
 
