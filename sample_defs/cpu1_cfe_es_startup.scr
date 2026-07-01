@@ -7,7 +7,7 @@ CFE_APP, ci_lab,      CI_LAB_AppMain,     CI_LAB,       60,   16384, 0x0, 0;
 CFE_APP, to_lab,      TO_LAB_AppMain,     TO_LAB,       70,   16384, 0x0, 0;
 CFE_APP, sch_lab,     SCH_LAB_AppMain,    SCH_LAB,      80,   16384, 0x0, 0;
 
-CFE_APP, telecom,     TELECOM_AppMain,    TELECOM,      90,   16384, 0x0, 0;
+CFE_APP, telecom,     TELECOM_AppMain,    TELECOM,      70,   16384, 0x0, 0;
 CFE_APP, obc_hk,      OBC_HK_AppMain,     OBC_HK,       90,   16384, 0x0, 0;
 
 !

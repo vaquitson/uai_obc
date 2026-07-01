@@ -85,6 +85,8 @@ void SCH_LAB_AppMain(void)
     CFE_SB_Buffer_t *     SBBufPtr;
 
     CFE_ES_PerfLogEntry(SCH_LAB_MAIN_TASK_PERF_ID);
+    
+    printf("NARWALL %d\n", NARWAL);
 
     Status = SCH_LAB_AppInit();
     if (Status != CFE_SUCCESS)

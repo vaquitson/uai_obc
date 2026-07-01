@@ -87,8 +87,6 @@ SET(SPACECRAFT_ID 0x42)
 # This list is effectively appended to every TGTx_APPLIST in targets.cmake.
 # Example:
 
-list(APPEND MISSION_GLOBAL_APPLIST telecom)
-list(APPEND MISSION_GLOBAL_APPLIST obc_hk)
 list(APPEND MISSION_GLOBAL_APPLIST sample_app sample_lib)
 
 # The "MISSION_GLOBAL_STATIC_APPLIST" is similar to MISSION_GLOBAL_APPLIST
@@ -105,7 +103,7 @@ SET(FT_INSTALL_SUBDIR "host/functional-test")
 SET(MISSION_CPUNAMES cpu1)
 
 SET(cpu1_PROCESSORID 1)
-SET(cpu1_APPLIST ci_lab to_lab sch_lab)
+SET(cpu1_APPLIST ci_lab to_lab sch_lab telecom obc_hk)
 SET(cpu1_FILELIST cfe_es_startup.scr)
 SET(cpu1_SYSTEM i686-linux-gnu)
 

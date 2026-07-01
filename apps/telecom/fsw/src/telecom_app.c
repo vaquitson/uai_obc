@@ -6,6 +6,7 @@
 #include <string.h>
 #include <stdio.h>
 
+#include "obc_hk_narwal.h"
 #include "obc_hk_msg.h"
 
 
@@ -30,7 +31,8 @@ TELECOM_Err_t TELECOM_PipesInit(void){
 CFE_Status_t TELECOM_APP_Init(void){ 
   CFE_Status_t status;
 
-  printf("AAAAAAAAAAAAAA   %d\n", OBC_HK_TLM_MID);
+  printf("NARWAl_TST: %d\n", NARWAl_TST);
+  printf("OBC_HK_TLM_MID: %d\n", OBC_HK_TLM_MID);
 
   // start the event service
   status = CFE_EVS_Register(NULL, 0, CFE_EVS_EventFilter_BINARY);
