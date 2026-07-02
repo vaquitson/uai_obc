@@ -6,6 +6,8 @@
 #define DEFAULT_OBC_HK_MSGID_VALUES_H
 
 #include "cfe_core_api_base_msgids.h"
+
+// [WARNING: Absloute sheet]
 #include "../fsw/inc/obc_hk_topicids.h"
 
 
