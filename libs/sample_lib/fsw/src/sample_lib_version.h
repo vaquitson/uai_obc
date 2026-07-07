@@ -80,5 +80,4 @@
 #endif /* SAMPLE_LIB_VERSION_H */
 
 /************************/
-/*  End of File Comment */
-/************************/
+/*  End of File Comment *//************************/

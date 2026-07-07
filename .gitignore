@@ -1,2 +1,3 @@
 build
 .DS_Store
+full_recompile.sh
