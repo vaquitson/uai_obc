@@ -7,4 +7,8 @@ add_cfe_app(obc_hw_lib
 
 target_include_directories(obc_hw_lib PUBLIC fsw/public_inc)
 
-
+if(OBC_PLATFORM_LINUX)
+  target_sources(obc_hw_lib PRIVATE fsw/src/linux/narwal_thermal_zones.c)
+  target_include_directories(obc_hw_lib PUBLIC fsw/src/linux)
+  target_compile_definitions(obc_hw_lib PUBLIC OBC_PLATFORM_LINUX=1 _POSIX_C_SOURCE=200809L)
+endif(OBC_PLATFORM_LINUX)

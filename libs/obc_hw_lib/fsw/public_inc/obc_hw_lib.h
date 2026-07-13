@@ -5,7 +5,7 @@
 #include "cfe.h"
 
 
-int32 OBC_HW_LIB_get_temp(void);
+int32 OBC_HW_LIB_get_cpu_temp(void);
 
 
 #endif
