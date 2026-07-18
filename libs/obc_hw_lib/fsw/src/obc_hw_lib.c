@@ -4,19 +4,29 @@
 #include <string.h>
 #include "cfe_evs.h"
 
-int32 OBC_HW_LIB_get_cpu_temp(void);
+
+float OBC_HW_LIB_get_cpu_temp(void);
 
 #ifdef OBC_PLATFORM_LINUX
-int32 OBC_HW_LIB_get_cpu_temp(void){
+float OBC_HW_LIB_get_cpu_temp(void){
   #include "narwal_thermal_zones.h"
-  static NarwalThermalZone n_tz = {0};
-  n_tz.error = 1;
-  printf("HELLO form thermal zones %d\n", n_tz.error);
-  return 0;
+
+  static NarwalThermalZone tz = {0};
+  static NarwalThermalZone *tz_p = NULL;
+  int rc;
+
+  if (tz_p == NULL){
+    tz_p = &tz;
+    rc = narwal_thermal_zones_get_by_type(tz_p, "x86_pkg_temp");
+    if (rc != NARWAL_THERMAL_ZONE_SUCESS)
+      return rc;
+  }
+
+  return narwal_thermal_zones_get_temp(tz_p);
 }
 
 #else
-int32 OBC_HW_LIB_get_cpu_temp(void){
+float OBC_HW_LIB_get_cpu_temp(void){
   printf("SAD from cpu temp\n");
   return 0;
 }
@@ -26,6 +36,6 @@ int32 OBC_HW_LIB_get_cpu_temp(void){
 
 int32 OBC_HW_LIB_Init(void){
   printf("Hello from OBC_HW_LIB\n");
-  OBC_HW_LIB_get_cpu_temp();
+  printf("cpu temp: %f\n", OBC_HW_LIB_get_cpu_temp());
   return 0;
 }
