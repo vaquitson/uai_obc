@@ -24,18 +24,14 @@ float OBC_HW_LIB_get_cpu_temp(void){
 
   return narwal_thermal_zones_get_temp(tz_p);
 }
-
 #else
 float OBC_HW_LIB_get_cpu_temp(void){
-  printf("SAD from cpu temp\n");
   return 0;
 }
-
 #endif
 
 
 int32 OBC_HW_LIB_Init(void){
   printf("Hello from OBC_HW_LIB\n");
-  printf("cpu temp: %f\n", OBC_HW_LIB_get_cpu_temp());
   return 0;
 }

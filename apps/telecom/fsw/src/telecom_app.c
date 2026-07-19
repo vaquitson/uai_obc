@@ -9,7 +9,6 @@
 #include "obc_hk_narwal.h"
 #include "obc_hk_msg.h"
 
-
 TELECOM_GlobalApp_t TELECOM_Global;
 
 TELECOM_Err_t TELECOM_PipesInit(void){
