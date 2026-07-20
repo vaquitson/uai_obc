@@ -1,18 +1,11 @@
 #ifndef OBC_HK_H
 #define OBC_HK_H
 
-#define OBC_HK_TLM_PIP_NAME "OBC_HK_TLM_PIPE"
-#define OBC_HK_PIPE_NAME_MAX 20
-
+#include "obc_hk_msgdefs.h"
 #include "cfe_sb.h"
 
-typedef struct {
-  CFE_MSG_TelemetryHeader_t telemetry_header;
-  float          cpu_temp;
-  uint8          cmd_counter;
-  uint8          err_counter;
-} OBC_HK_HkPacket_t;
-
+#define OBC_HK_TLM_PIP_NAME "OBC_HK_TLM_PIPE"
+#define OBC_HK_PIPE_NAME_MAX 20
 
 typedef struct {
   char tlm_pip_name[OBC_HK_PIPE_NAME_MAX];
@@ -22,9 +15,9 @@ typedef struct {
   OBC_HK_HkPacket_t hk_packet;
 } OBC_HK_GlobalApp_t;
 
+
 #define OBC_HK_MSG_INIT_FAILURE_EID 1
 #define OBC_HK_MSG_INIT_SUCCESFULY_EID 2
-
-
+#define OBC_HK_MSH_TRANSMITION_ERR_EID 3
 
 #endif 

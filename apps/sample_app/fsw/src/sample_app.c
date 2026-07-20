@@ -75,7 +75,7 @@ void SAMPLE_APP_Main(void)
     status = CFE_SB_TransmitMsg(CFE_MSG_PTR(narwal_paquet.TelemetryHeader), true);
 
     if (status == CFE_SUCCESS){
-      printf("Narwal Message send from sample app\n");
+      //printf("Narwal Message send from sample app\n");
     }
 
   }

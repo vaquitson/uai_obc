@@ -6,6 +6,7 @@
 #include "cfe_msg.h"
 
 #include "obc_hw_lib.h"
+#include "obc_hk_msgdefs.h"
 #include "obc_hk_msg.h"
 #include "obc_hk.h"
 
@@ -21,7 +22,7 @@ CFE_Status_t OBC_HK_Init(void){
         CFE_ES_WriteToSysLog("OBC_HK: Error Registering Events, RC = 0x%08lX\n", (unsigned long)status);
 
   status = CFE_MSG_Init(CFE_MSG_PTR(OBC_HK_data.hk_packet.telemetry_header),
-                        CFE_SB_ValueToMsgId(OBC_HK_MISSION_HK_TLM_TOPICID),
+                        CFE_SB_ValueToMsgId(OBC_HK_TLM_MID),
                         sizeof(OBC_HK_data.hk_packet));
 
   if (status != CFE_SUCCESS)
@@ -39,7 +40,6 @@ CFE_Status_t OBC_HK_Init(void){
 
 
 void OBC_HK_AppMain(void){ 
-  float cpu_temp;
   int32 status;
 
   status = OBC_HK_Init();
@@ -47,10 +47,12 @@ void OBC_HK_AppMain(void){
     OBC_HK_data.run_status = CFE_ES_RunStatus_APP_ERROR;
 
   while (CFE_ES_RunLoop(&OBC_HK_data.run_status) == true){
-    cpu_temp = OBC_HW_LIB_get_cpu_temp();
-    OBC_HK_data.hk_packet.cpu_temp = cpu_temp;
+    OBC_HK_data.hk_packet.cpu_temp = OBC_HW_LIB_get_cpu_temp();
     status = CFE_SB_TransmitMsg(CFE_MSG_PTR(OBC_HK_data.hk_packet.telemetry_header), true);
-    printf("CPU temp: %f\n", cpu_temp);
+    if (status != CFE_SUCCESS)
+      CFE_EVS_SendEvent(OBC_HK_MSH_TRANSMITION_ERR_EID, CFE_EVS_EventType_ERROR,
+                        "OBC_HK: msg transmition error, RC = 0x%08lX", (unsigned long)status);
+
     OS_TaskDelay(5000);
   }
 

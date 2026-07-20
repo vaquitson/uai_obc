@@ -253,8 +253,6 @@ void TO_LAB_forward_telemetry(void)
     if (CfeStatus == CFE_SUCCESS) { 
       CFE_MSG_GetMsgId(CFE_MSG_PTR(*SBBufPtr), &msg_id);
       if (CFE_SB_MsgIdToValue(msg_id) == 987){
-        printf("Narwal: Recived on TO_LAB, paquet from SAMPLE_APP: recived %c\n", 
-               ((NARWAL_paquet_t_1 *)SBBufPtr)->mesage);
       }
     }
 
