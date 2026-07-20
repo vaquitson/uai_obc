@@ -15,9 +15,4 @@ typedef struct {
   OBC_HK_HkPacket_t hk_packet;
 } OBC_HK_GlobalApp_t;
 
-
-#define OBC_HK_MSG_INIT_FAILURE_EID 1
-#define OBC_HK_MSG_INIT_SUCCESFULY_EID 2
-#define OBC_HK_MSH_TRANSMITION_ERR_EID 3
-
 #endif 

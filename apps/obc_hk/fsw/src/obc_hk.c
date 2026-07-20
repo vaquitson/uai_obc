@@ -8,6 +8,7 @@
 #include "obc_hw_lib.h"
 #include "obc_hk_msgdefs.h"
 #include "obc_hk_msg.h"
+#include "obc_hk_eventids.h"
 #include "obc_hk.h"
 
 OBC_HK_GlobalApp_t OBC_HK_data;
