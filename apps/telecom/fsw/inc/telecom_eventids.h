@@ -1,8 +1,11 @@
 #ifndef TELECOM_EVENTIDS_H
 #define TELECOM_EVENTIDS_H
 
-#define TELECOM_EVM_RESERVED         0
-#define TELECOM_INIT_INF_EID         1
+#define TELECOM_EVM_RESERVED           0
+#define TELECOM_INIT_INF_EID           1
+#define TELECOM_PIPE_CREATION_ERR_EID  2
+#define TELECOM_INIT_SUCCESFULL_EID    3
+
 #endif
 
 

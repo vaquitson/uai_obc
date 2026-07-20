@@ -16,13 +16,12 @@ CFE_Status_t OBC_HK_Init(void){
 
   OBC_HK_data.run_status = CFE_ES_RunStatus_APP_RUN;  
 
-  // init the Event Service
   status = CFE_EVS_Register(NULL, 0, CFE_EVS_EventFilter_BINARY);
   if (status != CFE_SUCCESS)
         CFE_ES_WriteToSysLog("OBC_HK: Error Registering Events, RC = 0x%08lX\n", (unsigned long)status);
 
-  status = CFE_MSG_Init(CFE_MSG_PTR(OBC_HK_data.hk_packet.TelemetryHeader),
-                        CFE_SB_ValueToMsgId(OBC_HK_TLM_MSG_ID),
+  status = CFE_MSG_Init(CFE_MSG_PTR(OBC_HK_data.hk_packet.telemetry_header),
+                        CFE_SB_ValueToMsgId(OBC_HK_MISSION_HK_TLM_TOPICID),
                         sizeof(OBC_HK_data.hk_packet));
 
   if (status != CFE_SUCCESS)
@@ -50,7 +49,7 @@ void OBC_HK_AppMain(void){
   while (CFE_ES_RunLoop(&OBC_HK_data.run_status) == true){
     cpu_temp = OBC_HW_LIB_get_cpu_temp();
     OBC_HK_data.hk_packet.cpu_temp = cpu_temp;
-    status = CFE_SB_TransmitMsg(CFE_MSG_PTR(OBC_HK_data.hk_packet.TelemetryHeader), true);
+    status = CFE_SB_TransmitMsg(CFE_MSG_PTR(OBC_HK_data.hk_packet.telemetry_header), true);
     printf("CPU temp: %f\n", cpu_temp);
     OS_TaskDelay(5000);
   }

@@ -7,7 +7,7 @@
 #include "cfe_sb.h"
 
 typedef struct {
-  CFE_MSG_TelemetryHeader_t TelemetryHeader;
+  CFE_MSG_TelemetryHeader_t telemetry_header;
   float          cpu_temp;
   uint8          cmd_counter;
   uint8          err_counter;
@@ -21,8 +21,6 @@ typedef struct {
   uint32 run_status;
   OBC_HK_HkPacket_t hk_packet;
 } OBC_HK_GlobalApp_t;
-
-#define OBC_HK_TLM_MSG_ID 56
 
 #define OBC_HK_MSG_INIT_FAILURE_EID 1
 #define OBC_HK_MSG_INIT_SUCCESFULY_EID 2
