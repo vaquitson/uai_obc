@@ -57,7 +57,10 @@ void TELECOM_AppMain(void){
                                   CFE_SB_PEND_FOREVER);
 
     if (status == CFE_SUCCESS){
-      printf("FROM TELECOM: cpu temp %f\n", ((OBC_HK_HkPacket_t *)sb_buf_p)->cpu_temp);
+      printf("FROM TELECOM:\n\tcpu temp %f\n\tmem used: %ld\n\tmem percentage: %f%%\n", 
+             ((OBC_HK_HkPacket_t *)sb_buf_p)->cpu_temp,
+             ((OBC_HK_HkPacket_t *)sb_buf_p)->ram_usage,
+             ((OBC_HK_HkPacket_t *)sb_buf_p)->ram_usage_percent);
     }
   }
 
