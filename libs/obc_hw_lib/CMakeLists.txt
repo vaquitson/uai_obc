@@ -17,4 +17,5 @@ endif(OBC_PLATFORM_LINUX)
 target_sources(obc_hw_lib PRIVATE 
   ${LINUX_SRC_DIR}/narwal_thermal_zones.c
   ${LINUX_SRC_DIR}/narwal_ram.c
+  ${LINUX_SRC_DIR}/narwal_cpu.c
 )
