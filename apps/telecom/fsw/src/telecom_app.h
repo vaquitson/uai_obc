@@ -3,6 +3,7 @@
 
 #include "cfe_es.h"
 #include "cfe_sb.h"
+#include "common_types.h"
 
 void  SAMPLE_APP_Main(void);
 int   TELECOM_APP_Init(void);
@@ -13,10 +14,15 @@ int   TELECOM_APP_Init(void);
 typedef uint32 TELECOM_Err_t;
 
 typedef struct {
-  char tlm_pip_name[TELECOM_TLM_PIPE_NAME_MAX];
+  char            tlm_pip_name[TELECOM_TLM_PIPE_NAME_MAX];
   CFE_SB_PipeId_t tlm_pipe;
 
-  uint32 run_status;
+  char            tlm_dest_ip[17];
+  osal_id_t       tlm_sock_id;
+
+  uint32          run_status;
+  bool            downlink_on;
+  bool            suppress_sendto; /** <In case of error, supreess the sending process**/
 
 } TELECOM_GlobalApp_t;
 

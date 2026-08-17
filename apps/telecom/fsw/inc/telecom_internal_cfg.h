@@ -1,0 +1,9 @@
+#ifndef TELECOM_INTERNAL_CFG_H
+#define TELECOM_INTERNAL_CFG_H
+
+#include "cfe_sb.h"
+
+#define TELECOM_PLATFORM_MAX_TLM_PKTS         50
+#define TELECOM_PLATFORM_TLM_PIPE_TIMEOUT     CFE_SB_POLL
+
+#endif

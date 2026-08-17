@@ -251,6 +251,7 @@ void TO_LAB_forward_telemetry(void)
     CfeStatus = CFE_SB_ReceiveBuffer(&SBBufPtr, TO_LAB_Global.Tlm_pipe, TO_LAB_PLATFORM_TLM_PIPE_TIMEOUT);
     
     if (CfeStatus == CFE_SUCCESS) { 
+      // narwal
       CFE_MSG_GetMsgId(CFE_MSG_PTR(*SBBufPtr), &msg_id);
       if (CFE_SB_MsgIdToValue(msg_id) == 987){
       }
@@ -261,7 +262,9 @@ void TO_LAB_forward_telemetry(void)
 
       if (TO_LAB_Global.downlink_on == true){
 
-        CfeStatus = TO_LAB_EncodeOutputMessage(SBBufPtr, &NetBufPtr, &NetBufSize);
+        CfeStatus = TO_LAB_EncodeOutputMessage(SBBufPtr, 
+                                               &NetBufPtr, 
+                                               &NetBufSize);
 
         if (CfeStatus != CFE_SUCCESS){
           CFE_EVS_SendEvent(TO_LAB_ENCODE_ERR_EID, CFE_EVS_EventType_ERROR, "Error packing output: %d\n",

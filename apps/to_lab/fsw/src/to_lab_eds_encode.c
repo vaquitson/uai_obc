@@ -176,7 +176,8 @@ CFE_Status_t TO_LAB_PassthruOutputPayload(void *DestBufPtr, const CFE_SB_Buffer_
  * according to the output policy.
  * ---------------------------------------
  */
-CFE_Status_t TO_LAB_EncodeOutputMessage(const CFE_SB_Buffer_t *SourceBuffer, const void **DestBufferOut,
+CFE_Status_t TO_LAB_EncodeOutputMessage(const CFE_SB_Buffer_t *SourceBuffer,
+                                        const void **DestBufferOut,
                                         size_t *DestSizeOut)
 {
     CFE_MissionLib_TopicInfo_t            TopicInfo;
