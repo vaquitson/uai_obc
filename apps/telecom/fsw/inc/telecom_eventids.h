@@ -7,7 +7,8 @@
 #define TELECOM_INIT_SUCCESFULL_EID    3
 #define TELECOM_SUBSCRIPTION_ERR_EID   4
 #define TELECOM_ENCODE_ERR_EID         5
-#define TELECOM_SENDIONG_ERR_EID       6
+#define TELECOM_SENDING_ERR_EID        6
+#define TELECOM_TLM_SOCK_ERR_EID       7
 
 #endif
 

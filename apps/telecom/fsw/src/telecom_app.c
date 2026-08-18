@@ -51,6 +51,23 @@ CFE_Status_t TELECOM_APP_Init(void){
 }
 
 
+void TELECOM_APP_open_telemetry(void){
+  int32 status;
+  status = OS_SocketOpen(&TELECOM_data.tlm_sock_id, 
+                         OS_SocketDomain_INET, 
+                         OS_SocketType_DATAGRAM);
+
+  if (status != OS_SUCCESS){
+    CFE_EVS_SendEvent(TELECOM_TLM_SOCK_ERR_EID, 
+                      CFE_EVS_EventType_ERROR, 
+                      "L%d, TO TLM socket error: %d",
+                      __LINE__, (int)status);    
+  }
+}
+
+
+
+
 void TELECOM_APP_forward_telemetry(void){
   OS_SockAddr_t    dest_addr;
   int32            os_status;
@@ -92,7 +109,7 @@ void TELECOM_APP_forward_telemetry(void){
                             &dest_addr);
 
           if (os_status < 0){
-            CFE_EVS_SendEvent(TELECOM_SENDIONG_ERR_EID, CFE_EVS_EventType_ERROR,
+            CFE_EVS_SendEvent(TELECOM_SENDING_ERR_EID, CFE_EVS_EventType_ERROR,
                               "L%d TO sendto error %d. Tlm output error\n", __LINE__, (int)os_status);
             TELECOM_data.suppress_sendto = true;
           }
