@@ -123,6 +123,7 @@ void TELECOM_APP_forward_telemetry(void){
 
 
 void TELECOM_AppMain(void){
+  printf("HELLOO\n");
   int32 status;
   CFE_SB_Buffer_t *sb_buf_p;
 
@@ -131,6 +132,7 @@ void TELECOM_AppMain(void){
   }
 
   while (CFE_ES_RunLoop(&TELECOM_data.run_status) == true){
+
 
     status = CFE_SB_ReceiveBuffer(&sb_buf_p, 
                                   TELECOM_data.tlm_pipe, 
