@@ -1,0 +1,6 @@
+#ifndef DEFAULT_CMD_HAND_MSGIDS_H
+#define DEFAULT_CMD_HAND_MSGIDS_H
+
+#define CMD_HAND_CMD_MID 111 
+
+#endif 

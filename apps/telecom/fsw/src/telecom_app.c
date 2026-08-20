@@ -7,6 +7,8 @@
 #include "obc_hk_msg.h"
 #include "obc_hk_msgdefs.h"
 
+#include "cmd_hand_msgids.h"
+
 #include "telecom_interface_cfg.h"
 #include "telecom_internal_cfg.h"
 #include "telecom_eventids.h"
@@ -22,6 +24,8 @@ CFE_Status_t TELECOM_APP_Init(void){
   memset(&TELECOM_data, 0, sizeof(TELECOM_data));
   TELECOM_data.suppress_sendto = false;
   TELECOM_data.downlink_on = false;
+
+  printf("######### cmd hand msg id: %d\n", CMD_HAND_CMD_MID);
 
   TELECOM_data.run_status = CFE_ES_RunStatus_APP_RUN; 
 

@@ -52,8 +52,8 @@ void OBC_HK_AppMain(void){
     OBC_HK_data.hk_packet.ram_usage =         OBC_HW_LIB_get_ram_usage();
     OBC_HK_data.hk_packet.cpu_usage =         OBC_HW_LIB_get_cpu_usage();
 
-    status = CFE_SB_TransmitMsg(
-      CFE_MSG_PTR(OBC_HK_data.hk_packet.telemetry_header), true);
+    status = CFE_SB_TransmitMsg(CFE_MSG_PTR(OBC_HK_data.hk_packet.telemetry_header),
+                                true);
     if (status != CFE_SUCCESS)
       CFE_EVS_SendEvent(OBC_HK_MSH_TRANSMITION_ERR_EID, CFE_EVS_EventType_ERROR,
                         "OBC_HK: msg transmition error, RC = 0x%08lX", (unsigned long)status);
