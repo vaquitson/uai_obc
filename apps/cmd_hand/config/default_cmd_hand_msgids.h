@@ -3,4 +3,6 @@
 
 #define CMD_HAND_CMD_MID 111 
 
+#define CMD_HAND_LISTENING_PORT 1234
+
 #endif 

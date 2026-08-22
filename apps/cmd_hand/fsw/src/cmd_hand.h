@@ -7,15 +7,15 @@
 
 typedef struct
 {
-    bool            SocketConnected;
+    bool            sock_listening;
     bool            Scheduled;
     bool            AllowPassthrough;
 
     CFE_SB_PipeId_t cmd_pipe;
     uint32          run_status;
 
-    osal_id_t       SocketID;
-    OS_SockAddr_t   SocketAddress;
+    osal_id_t       tc_sock_id;
+    OS_SockAddr_t   sock_addr;
 
     void * NetBufPtr;
     size_t NetBufSize;
