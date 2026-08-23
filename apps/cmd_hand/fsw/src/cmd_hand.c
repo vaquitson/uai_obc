@@ -12,6 +12,10 @@
 #include "cfe_psp.h"
 #include "osapi-sockets.h"
 
+#include "cmd_hand_internal_cfg.h"
+#include "cmd_hand_decode.h"
+
+
 CMD_HAND_GlobalData_t CMD_HAND_data;
 
 
@@ -89,6 +93,59 @@ CFE_Status_t CMD_HAND_listening_sock_set_up(void){
 }
 
 
+/**
+  * This fucntion in charged of reading the messages 
+  * comming from ground 
+*/
+void CMD_HAND_read_up_link(void){
+  int   i;
+  int32 read_size;
+
+  CFE_Status_t     status;
+  CFE_SB_Buffer_t *sb_buf_p;
+
+  for (i = 0; i <= CMD_HAND_MAX_INGEST_PKTS; i++){
+    if (CMD_HAND_data.net_buf_ptr == NULL) {
+      CMD_HAND_get_input_buf(&CMD_HAND_data.net_buf_ptr, &CMD_HAND_data.net_buf_size);
+    }
+
+    if (CMD_HAND_data.net_buf_ptr  == NULL){
+      break;
+    }
+
+    read_size = OS_SocketRecvFrom(CMD_HAND_data.tc_sock_id, 
+                                 CMD_HAND_data.net_buf_ptr, 
+                                 CMD_HAND_data.net_buf_size,
+                                 &CMD_HAND_data.sock_addr, 
+                                 CMD_HAND_UPLINK_RECEIVE_TIMEOUT);
+    if (read_size > 0){
+
+      status = CMD_HAND_decode_input_msg(CMD_HAND_data.net_buf_ptr, 
+                                         read_size, 
+                                         &sb_buf_p);
+      if (status != CFE_SUCCESS){
+        CMD_HAND_data.ingest_errors++;
+
+      } else {
+        CMD_HAND_data.ingest_packets++;
+        status = CFE_SB_TransmitBuffer(sb_buf_p, false);
+      }
+
+      if (status == CFE_SUCCESS){
+        /* Set NULL so a new buffer will be obtained next time around */
+        CMD_HAND_data.net_buf_ptr= NULL;
+        CMD_HAND_data.net_buf_size = 0;
+      } else {
+        CFE_EVS_SendEvent(CMD_HAND_INGEST_SEND_ERR_EID, CFE_EVS_EventType_ERROR,
+                          "CMD_HAND: Ingest failed, status=%d\n", (int)status);
+      }
+    } else {
+      break; /* no (more) messages */
+    }
+  }
+}
+
+
 void CMD_HAND_delete_callback(void)
 {
     OS_printf("CMD HAND delete callback -- Closing CMD HAND Network socket.\n");
@@ -103,6 +160,8 @@ CFE_Status_t CMD_HAND_init(void){
 
   CMD_HAND_data.run_status = CFE_ES_RunStatus_APP_RUN;  
   CMD_HAND_data.sock_listening = false;
+  CMD_HAND_data.ingest_packets = 0;
+  CMD_HAND_data.ingest_errors = 0;
 
   status = CFE_EVS_Register(NULL, 0, CFE_EVS_EventFilter_BINARY);
   if (status != CFE_SUCCESS) {

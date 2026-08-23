@@ -17,11 +17,13 @@ typedef struct
     osal_id_t       tc_sock_id;
     OS_SockAddr_t   sock_addr;
 
-    void * NetBufPtr;
-    size_t NetBufSize;
+    void * net_buf_ptr;
+    size_t net_buf_size;
+
+    uint32 ingest_errors;
+    uint32 ingest_packets;
 
 } CMD_HAND_GlobalData_t;
 
-#define CMD_HAND_PLAFORM_PIPE_DEPTH 32
 
 #endif
