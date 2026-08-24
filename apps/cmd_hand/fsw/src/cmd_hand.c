@@ -104,6 +104,7 @@ void CMD_HAND_read_up_link(void){
   CFE_Status_t     status;
   CFE_SB_Buffer_t *sb_buf_p;
 
+  printf("######### HELOOO ##############\n");
   for (i = 0; i <= CMD_HAND_MAX_INGEST_PKTS; i++){
     if (CMD_HAND_data.net_buf_ptr == NULL) {
       CMD_HAND_get_input_buf(&CMD_HAND_data.net_buf_ptr, &CMD_HAND_data.net_buf_size);
@@ -119,7 +120,7 @@ void CMD_HAND_read_up_link(void){
                                  &CMD_HAND_data.sock_addr, 
                                  CMD_HAND_UPLINK_RECEIVE_TIMEOUT);
     if (read_size > 0){
-
+      printf("###### Command recived ########\n");
       status = CMD_HAND_decode_input_msg(CMD_HAND_data.net_buf_ptr, 
                                          read_size, 
                                          &sb_buf_p);
@@ -174,6 +175,9 @@ CFE_Status_t CMD_HAND_init(void){
   status = CMD_HAND_pipe_set_up();
 
   status = CMD_HAND_listening_sock_set_up();
+  if (status == CFE_SUCCESS){
+    CMD_HAND_data.sock_listening = true; 
+  }
 
   OS_TaskInstallDeleteHandler(&CMD_HAND_delete_callback);
 
@@ -204,7 +208,11 @@ void CMD_HAND_AppMain(void){
   }
   
   while (CFE_ES_RunLoop(&CMD_HAND_data.run_status) == true){ 
-    OS_TaskDelay(10000);
+    OS_TaskDelay(5000);
+
+    if (CMD_HAND_data.sock_listening){
+      CMD_HAND_read_up_link();
+    }
   }
 
   CFE_ES_ExitApp(CMD_HAND_data.run_status);

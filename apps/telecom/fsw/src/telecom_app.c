@@ -25,8 +25,6 @@ CFE_Status_t TELECOM_APP_Init(void){
   TELECOM_data.suppress_sendto = false;
   TELECOM_data.downlink_on = false;
 
-  printf("######### cmd hand msg id: %d\n", CMD_HAND_CMD_MID);
-
   TELECOM_data.run_status = CFE_ES_RunStatus_APP_RUN; 
 
   status = CFE_EVS_Register(NULL, 0, CFE_EVS_EventFilter_BINARY);
@@ -127,7 +125,6 @@ void TELECOM_APP_forward_telemetry(void){
 
 
 void TELECOM_AppMain(void){
-  printf("HELLOO\n");
   int32 status;
   CFE_SB_Buffer_t *sb_buf_p;
 
@@ -136,13 +133,11 @@ void TELECOM_AppMain(void){
   }
 
   while (CFE_ES_RunLoop(&TELECOM_data.run_status) == true){
-
-
     status = CFE_SB_ReceiveBuffer(&sb_buf_p, 
                                   TELECOM_data.tlm_pipe, 
                                   CFE_SB_PEND_FOREVER);
 
-    if (status == CFE_SUCCESS){
+    if (status != CFE_SUCCESS){
       printf("FROM TELECOM:\n\tcpu temp %f\n\tmem used: %ld\n\tmem percentage: %f%%\n\tcpu usage: %f%%\n", 
              ((OBC_HK_HkPacket_t *)sb_buf_p)->cpu_temp,
              ((OBC_HK_HkPacket_t *)sb_buf_p)->ram_usage,

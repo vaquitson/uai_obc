@@ -1,0 +1,2 @@
+[console_scripts]
+cFS-GroundSystem = GroundSystem:main
