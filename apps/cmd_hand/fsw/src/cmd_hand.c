@@ -104,7 +104,6 @@ void CMD_HAND_read_up_link(void){
   CFE_Status_t     status;
   CFE_SB_Buffer_t *sb_buf_p;
 
-  printf("######### HELOOO ##############\n");
   for (i = 0; i <= CMD_HAND_MAX_INGEST_PKTS; i++){
     if (CMD_HAND_data.net_buf_ptr == NULL) {
       CMD_HAND_get_input_buf(&CMD_HAND_data.net_buf_ptr, &CMD_HAND_data.net_buf_size);
