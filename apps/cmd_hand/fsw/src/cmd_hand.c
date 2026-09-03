@@ -24,7 +24,7 @@ CMD_HAND_GlobalData_t CMD_HAND_data;
   * for the applicaciotn.
 */
 CFE_Status_t CMD_HAND_pipe_set_up(void){
-  CFE_Status_t status;
+CFE_Status_t status;
 
   status = CFE_SB_CreatePipe(&CMD_HAND_data.cmd_pipe, 
                              CMD_HAND_PLAFORM_PIPE_DEPTH,

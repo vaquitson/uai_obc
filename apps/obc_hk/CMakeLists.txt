@@ -2,6 +2,8 @@ project(CFE_OBC_HK C)
 
 set(APP_SRC_FILES
   fsw/src/obc_hk.c
+  fsw/src/obc_hk_dispatch.c
+  fsw/src/obc_hk_cmds.c
 )
 
 add_cfe_app(obc_hk ${APP_SRC_FILES})

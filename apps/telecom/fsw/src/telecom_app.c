@@ -91,24 +91,24 @@ void TELECOM_APP_forward_telemetry(void){
                                       TELECOM_data.tlm_pipe, 
                                       TELECOM_PLATFORM_TLM_PIPE_TIMEOUT);
 
-    
+
     if (cfe_status == CFE_SUCCESS && TELECOM_data.suppress_sendto != false){
       os_status = OS_SUCCESS;
-      
+
       if (TELECOM_data.downlink_on == true) {
         cfe_status = TELECOM_encode_output_message(
-                                      sb_buf_p,
-                                      &net_buf_p, &net_buf_s);  
-        
+          sb_buf_p,
+          &net_buf_p, &net_buf_s);  
+
         if (cfe_status != CFE_SUCCESS){
           CFE_EVS_SendEvent(TELECOM_ENCODE_ERR_EID, CFE_EVS_EventType_ERROR, 
                             "Error packing output: %d\n",
                             (int)cfe_status);
         } else { 
           os_status = OS_SocketSendTo(
-                            TELECOM_data.tlm_sock_id, 
-                            net_buf_p, net_buf_s, 
-                            &dest_addr);
+            TELECOM_data.tlm_sock_id, 
+            net_buf_p, net_buf_s, 
+            &dest_addr);
 
           if (os_status < 0){
             CFE_EVS_SendEvent(TELECOM_SENDING_ERR_EID, CFE_EVS_EventType_ERROR,
@@ -137,7 +137,7 @@ void TELECOM_AppMain(void){
                                   TELECOM_data.tlm_pipe, 
                                   CFE_SB_PEND_FOREVER);
 
-    if (status != CFE_SUCCESS){
+    if (status == CFE_SUCCESS){
       printf("FROM TELECOM:\n\tcpu temp %f\n\tmem used: %ld\n\tmem percentage: %f%%\n\tcpu usage: %f%%\n", 
              ((OBC_HK_HkPacket_t *)sb_buf_p)->cpu_temp,
              ((OBC_HK_HkPacket_t *)sb_buf_p)->ram_usage,

@@ -1,4 +1,8 @@
 # OBC_HK 100 - 110
+* OBC_HK_SEND_HK 100
+* OBC_HK_CMD 101
+## OBC_HK Command codes
+* OBC_HK_NOOP_CC 103
 
 
 # CMD_HAND 111 - 120

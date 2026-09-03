@@ -83,8 +83,10 @@ void SAMPLE_APP_ProcessGroundCommand(const CFE_SB_Buffer_t *SBBufPtr)
     switch (CommandCode)
     {
         case SAMPLE_APP_NOOP_CC:
+            printf("NOOP: %d\n", SAMPLE_APP_NOOP_CC);
             if (SAMPLE_APP_VerifyCmdLength(&SBBufPtr->Msg, sizeof(SAMPLE_APP_NoopCmd_t)))
             {
+                printf("NOOP RECIVED  ");
                 SAMPLE_APP_NoopCmd((const SAMPLE_APP_NoopCmd_t *)SBBufPtr);
             }
             break;
@@ -133,6 +135,7 @@ void SAMPLE_APP_TaskPipe(const CFE_SB_Buffer_t *SBBufPtr)
     CFE_SB_MsgId_t MsgId = CFE_SB_INVALID_MSG_ID;
 
     /* cache the local MID Values here, this avoids repeat lookups */
+    /*  WTF  */
     if (!CFE_SB_IsValidMsgId(CMD_MID))
     {
         CMD_MID     = CFE_SB_ValueToMsgId(SAMPLE_APP_CMD_MID);
@@ -140,7 +143,9 @@ void SAMPLE_APP_TaskPipe(const CFE_SB_Buffer_t *SBBufPtr)
     }
 
     CFE_MSG_GetMsgId(&SBBufPtr->Msg, &MsgId);
-
+    
+    printf("MSG ID: %d\n", CFE_SB_MsgIdToValue(MsgId));
+    printf("MSG ID: %d\n", CFE_SB_MsgIdToValue(CMD_MID));
     /* Process all SB messages */
     if (CFE_SB_MsgId_Equal(MsgId, SEND_HK_MID))
     {
