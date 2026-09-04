@@ -11,6 +11,7 @@ CFE_APP, sch_lab,     SCH_LAB_AppMain,    SCH_LAB,      80,   16384, 0x0, 0;
 CFE_APP, telecom,     TELECOM_AppMain,    TELECOM,      70,   16384, 0x0, 0;
 CFE_APP, obc_hk,      OBC_HK_AppMain,     OBC_HK,       90,   16384, 0x0, 0;
 CFE_APP, cmd_hand,    CMD_HAND_AppMain,   CMD_HAND,     90,   16384, 0x0, 0;
+CFE_APP, csv_reader,  CSV_READER_AppMain, CSV_READER,   90,   16384, 0x0, 0;
 
 !
 ! Startup script fields:

@@ -1,0 +1,10 @@
+/**
+ * @file
+ *   Specification for the CSV_READER topic ID values
+ */
+#ifndef DEFAULT_CSV_READER_TOPICID_VALUES_H
+#define DEFAULT_CSV_READER_TOPICID_VALUES_H
+
+#define CSV_READER_MISSION_TIDVAL(x) DEFAULT_CSV_READER_MISSION_##x##_TOPICID
+
+#endif
