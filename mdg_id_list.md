@@ -2,7 +2,11 @@
 * OBC_HK_SEND_HK 100
 * OBC_HK_CMD 101
 ## OBC_HK Command codes
+* OBC_HK_TLM_MID            100 
+* OBC_HK_SEND_TLM_MID       101
 * OBC_HK_NOOP_CC 103
+
+
 
 
 # CMD_HAND 111 - 120

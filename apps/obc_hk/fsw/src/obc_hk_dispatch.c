@@ -28,7 +28,7 @@ void OBC_HK_task_pipe(const CFE_SB_Buffer_t *sb_buf_p){
 
   CFE_MSG_GetMsgId(&sb_buf_p->Msg, &MsgId);
 
-  if (CFE_SB_MsgId_Equal(MsgId, CFE_SB_ValueToMsgId(OBC_HK_TLM_MID))){
+  if (CFE_SB_MsgId_Equal(MsgId, CFE_SB_ValueToMsgId(OBC_HK_SEND_TLM_MID))){
     OBC_HK_send_hk(); 
   }
 }

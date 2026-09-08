@@ -23,7 +23,7 @@ CFE_Status_t OBC_HK_pipe_init(void){
                              OBC_HK_PLAFORM_PIPE_DEPTH,
                              OBC_HK_CMD_PIPE_NAME); 
 
-  CFE_SB_Subscribe(CFE_SB_ValueToMsgId(OBC_HK_TLM_MID), OBC_HK_data.cmd_pipe);
+  CFE_SB_Subscribe(CFE_SB_ValueToMsgId(OBC_HK_SEND_TLM_MID), OBC_HK_data.cmd_pipe);
 
   if (status != CFE_SUCCESS){
    CFE_EVS_SendEvent(OBC_HK_PIPE_CREATION_ERR_EID, CFE_EVS_EventType_ERROR,
@@ -80,6 +80,7 @@ void OBC_HK_AppMain(void){
                                   CFE_SB_PEND_FOREVER);
     
     if (status == CFE_SUCCESS){
+      printf("FROM OBC_HK\n");
       OBC_HK_task_pipe(sb_buf_p);
     }
   }

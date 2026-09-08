@@ -63,7 +63,7 @@ int util_init(void){
   }
 
   cfe_status = CFE_MSG_Init(CFE_MSG_PTR(data.cmd_paquet.cmd_header),
-                        CFE_SB_ValueToMsgId(100),
+                        CFE_SB_ValueToMsgId(101),
                         sizeof(UtilCmdPacket_t));
 
   if (cfe_status != CFE_SUCCESS){
@@ -116,6 +116,11 @@ int socket_perp_msg(int32 msg_id, void *ptr, size_t msg_size ){
 
 int send_udp_packet(const void *packet, size_t packet_size) {
   ssize_t bytes_sent;
+  char *packet_str = (char *)packet;
+
+  for (size_t i = 0; i < packet_size; i++) {
+    printf("%02x", (unsigned char)packet_str[i]);
+  }
 
   bytes_sent = sendto(data.uplink_sock, packet, packet_size, 0,
                       (const struct sockaddr *)&data.dest_addr, sizeof(data.dest_addr));
