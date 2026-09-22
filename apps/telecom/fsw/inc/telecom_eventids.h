@@ -10,6 +10,7 @@
 #define TELECOM_SENDING_ERR_EID        6
 #define TELECOM_TLM_SOCK_ERR_EID       7
 #define TELECOM_OPEN_ERR_EID           8
+#define TELECOM_MID_ERR_EID            9
 
 #endif
 

@@ -1,0 +1,7 @@
+#ifndef DEFAULT_TELECOM_MSGID_H
+#define DEFAULT_TELECOM_MSGID_H
+
+#define TELECOM_CMD_MID      122 
+#define TELECOM_SEND_HK_MID  123 
+
+#endif

@@ -52,6 +52,19 @@ CFE_Status_t TELECOM_APP_Init(void){
   return status;
 }
 
+void TELECOM_process_cmd(void){
+  CFE_Status_t status;
+  CFE_SB_Buffer_t *sb_buf_p;
+
+  while (1){
+    status = CFE_SB_ReceiveBuffer(&sb_buf_p, TELECOM_data.cmd_pipe, CFE_SB_POLL);
+    if (status != CFE_SUCCESS){
+      break;
+    }
+
+  }
+}
+
 
 
 void TELECOM_AppMain(void){

@@ -2,6 +2,7 @@ project(CFE_TELECOM C)
 
 set(APP_SRC_FILES
     fsw/src/telecom_app.c
+    fsw/src/telecom_dispatch.c
 )
 
 if (CFE_EDS_ENABLED)
