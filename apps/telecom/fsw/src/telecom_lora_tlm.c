@@ -1,6 +1,7 @@
 #include "osapi.h"
 #include "cfe_sb.h"
 #include "cfe_evs.h"
+
 #include "telecom_app.h"
 #include "telecom_encode.h"
 #include "telecom_lora_controller.h"
@@ -12,7 +13,7 @@
 #include "telecom_internal_cfg.h"
 
 
-void TELECOM_APP_open_telemetry(void){
+CFE_Status_t TELECOM_APP_open_telemetry(void){
   int fd;
 
   fd = telecom_serial_port_get(TELECOM_MISSION_TLM_LORA_DEVICE_PATH);
@@ -25,10 +26,13 @@ void TELECOM_APP_open_telemetry(void){
     CFE_EVS_SendEvent(TELECOM_SUCCESS_EID, 
                       CFE_EVS_EventType_INFORMATION, 
                       "LoRa Controller Ready");
+    return CFE_SUCCESS;
   } else {
     CFE_EVS_SendEvent(TELECOM_OPEN_ERR_EID,
                       CFE_EVS_EventType_ERROR,
                       "LoRa Controller faild initialization");
+
+    return CFE_STATUS_EXTERNAL_RESOURCE_FAIL;
   }
 }
 

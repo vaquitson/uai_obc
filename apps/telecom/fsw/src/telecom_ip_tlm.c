@@ -8,7 +8,7 @@
 #include "telecom_eventids.h"
 
 
-void TELECOM_APP_open_telemetry(void){
+CFE_Status_t TELECOM_APP_open_telemetry(void){
   int32 status;
   status = OS_SocketOpen(&TELECOM_data.tlm_sock_id, 
                          OS_SocketDomain_INET, 
@@ -25,6 +25,7 @@ void TELECOM_APP_open_telemetry(void){
                       "TLM INET SOCKET initialized");    
 
   }
+  return status;
 }
 
 void TELECOM_APP_forward_telemetry(void){
