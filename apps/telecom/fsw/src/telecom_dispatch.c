@@ -3,6 +3,20 @@
 #include "telecom_dispatch.h"
 #include "telecom_msgids.h"
 #include "telecom_eventids.h"
+#include "telecom_fcncodes.h"
+
+void TELECOM_process_ground_cmd(const CFE_SB_Buffer_t *sb_buf_p){
+  CFE_MSG_FcnCode_t fcn_code = 0;
+  CFE_MSG_GetFcnCode(&sb_buf_p->Msg, &fcn_code);
+  
+  switch (fcn_code){
+    case TELECOM_NOOP_CMD:
+
+      break;
+    
+  }
+
+}
 
 
 void TELECOM_task_pipe(const CFE_SB_Buffer_t *sb_buf_p){
@@ -19,6 +33,7 @@ void TELECOM_task_pipe(const CFE_SB_Buffer_t *sb_buf_p){
   CFE_MSG_GetMsgId(&sb_buf_p->Msg, &msg_id);
 
   if (CFE_SB_MsgId_Equal(msg_id, SEND_HK_MID)){
+
   } else if (CFE_SB_MsgId_Equal(msg_id, CMD_MID)){
 
   } else {

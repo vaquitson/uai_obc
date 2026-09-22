@@ -44,7 +44,7 @@ void TELECOM_forward_tlm(void){
   CFE_SB_Buffer_t      *sb_buf_p;
   
 
-  // cahce the memory for the address
+  // cache the memory for the address (stack)
   if (dest_set == false){
     OS_SocketAddrInit(&dest_addr, OS_SocketDomain_INET);
     OS_SocketAddrSetPort(&dest_addr, port_num);

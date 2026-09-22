@@ -8,7 +8,7 @@
 #
 ###########################################################
 
-# The list of header files that control the SAMPLE_APP configuration
+# The list of header files that control the TELECOM app configuration
 set(TELECOM_PLATFORM_CONFIG_FILE_LIST
 )
 
