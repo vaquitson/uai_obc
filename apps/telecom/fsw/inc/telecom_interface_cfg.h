@@ -8,5 +8,6 @@
 // Use as fall back if comunicaction is not specify
 // Use Inet Sockets
 #define TELECOM_MISSION_TLM_IP_PORT 2234
+#define TELECOM_MISSION_TLM_IP_ADDR "127.0.0.1"
 
 #endif

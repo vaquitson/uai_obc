@@ -13,7 +13,7 @@
 #include "telecom_internal_cfg.h"
 
 
-CFE_Status_t TELECOM_APP_open_telemetry(void){
+CFE_Status_t TELECOM_open_tlm(void){
   int fd;
 
   fd = telecom_serial_port_get(TELECOM_MISSION_TLM_LORA_DEVICE_PATH);
@@ -36,7 +36,7 @@ CFE_Status_t TELECOM_APP_open_telemetry(void){
   }
 }
 
-void TELECOM_APP_forward_telemetry(void){
+void TELECOM_forward_tlm(void){
   CFE_SB_Buffer_t *sb_buf_p;
   size_t           bytes;
   uint32           pkt_count = 0;
@@ -61,6 +61,7 @@ void TELECOM_APP_forward_telemetry(void){
 
       }
     }
+
     pkt_count++; 
   } while(cfe_status == CFE_SUCCESS && pkt_count < TELECOM_PLATFORM_MAX_TLM_PKTS);
 }

@@ -21,20 +21,9 @@
 
 TELECOM_GlobalApp_t TELECOM_data;
 
-CFE_Status_t TELECOM_APP_Init(void){ 
+CFE_Status_t TELECOM_init_pipes(void){
   CFE_Status_t status;
 
-  memset(&TELECOM_data, 0, sizeof(TELECOM_data));
-  TELECOM_data.suppress_sendto = false;
-  TELECOM_data.downlink_on = false;
-
-  TELECOM_data.run_status = CFE_ES_RunStatus_APP_RUN; 
-
-  status = CFE_EVS_Register(NULL, 0, CFE_EVS_EventFilter_BINARY);
-  if (status != CFE_SUCCESS){
-    CFE_ES_WriteToSysLog("TELECOM: Error registering for Event Services, RC = 0x%08X\n", (unsigned int)status);
-  }
-  
   strncpy(TELECOM_data.tlm_pipe_name, TELECOM_TLM_PIPE_NAME, TELECOM_TLM_PIPE_NAME_MAX);
   status = CFE_SB_CreatePipe(&TELECOM_data.tlm_pipe, 10, TELECOM_data.tlm_pipe_name);
   if (status != CFE_SUCCESS)
@@ -58,7 +47,34 @@ CFE_Status_t TELECOM_APP_Init(void){
     CFE_EVS_SendEvent(TELECOM_SUBSCRIPTION_ERR_EID, CFE_EVS_EventType_ERROR,
                       "TELECOM: Faild to subscribe to TELECOM CMD MID,  RC = 0x%08lX", (unsigned long)status);
 
-  TELECOM_APP_open_telemetry();
+
+  return status;
+}
+
+
+CFE_Status_t TELECOM_APP_Init(void){ 
+  CFE_Status_t status;
+
+  memset(&TELECOM_data, 0, sizeof(TELECOM_data));
+
+  TELECOM_data.run_status = CFE_ES_RunStatus_APP_RUN; 
+
+  status = CFE_EVS_Register(NULL, 0, CFE_EVS_EventFilter_BINARY);
+  if (status != CFE_SUCCESS){
+    CFE_ES_WriteToSysLog("TELECOM: Error registering for Event Services, RC = 0x%08X\n", (unsigned int)status);
+  }
+
+  status = TELECOM_init_pipes();
+  if (status != CFE_SUCCESS){
+    CFE_EVS_SendEvent(TELECOM_PIPE_INITILIZATION_ERR, CFE_EVS_EventType_ERROR, 
+                      "TELECOM: Initialized succesfuly, RC = 0x%08lX", (unsigned long)status);
+  }
+  
+  status = TELECOM_open_tlm();
+  if (status != CFE_SUCCESS){
+    CFE_EVS_SendEvent(TELECOM_TLM_INIT_ERR, CFE_EVS_EventType_ERROR, 
+                      "TELECOM: Error initializing telemetry, RC = 0x%08lX", (unsigned long)status);
+  }
 
   if (status == CFE_SUCCESS)
     CFE_EVS_SendEvent(TELECOM_INIT_SUCCESFULL_EID, CFE_EVS_EventType_INFORMATION,
@@ -66,6 +82,7 @@ CFE_Status_t TELECOM_APP_Init(void){
 
   return status;
 }
+
 
 void TELECOM_process_cmd(void){
   CFE_Status_t status;
@@ -81,7 +98,6 @@ void TELECOM_process_cmd(void){
 }
 
 
-
 void TELECOM_AppMain(void){
   if (TELECOM_APP_Init() != CFE_SUCCESS){
     TELECOM_data.run_status = CFE_ES_RunStatus_APP_ERROR;     
@@ -90,7 +106,7 @@ void TELECOM_AppMain(void){
   while (CFE_ES_RunLoop(&TELECOM_data.run_status) == true){
     OS_TaskDelay(TELECOM_PLATFORM_TASK_MSEC);
     TELECOM_process_cmd();
-    TELECOM_APP_forward_telemetry(); 
+    TELECOM_forward_tlm(); 
   }
 
   CFE_ES_ExitApp(TELECOM_data.run_status);

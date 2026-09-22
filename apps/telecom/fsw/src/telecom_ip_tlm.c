@@ -8,8 +8,11 @@
 #include "telecom_eventids.h"
 
 
-CFE_Status_t TELECOM_APP_open_telemetry(void){
+CFE_Status_t TELECOM_open_tlm(void){
   int32 status;
+  
+  strcpy(&TELECOM_data.tlm_dest_ip, TELECOM_MISSION_TLM_IP_ADDR);
+
   status = OS_SocketOpen(&TELECOM_data.tlm_sock_id, 
                          OS_SocketDomain_INET, 
                          OS_SocketType_DATAGRAM);
@@ -28,21 +31,27 @@ CFE_Status_t TELECOM_APP_open_telemetry(void){
   return status;
 }
 
-void TELECOM_APP_forward_telemetry(void){
-  OS_SockAddr_t    dest_addr;
-  int32            os_status;
-  uint32           pkt_count = 0;
-  uint16           port_num = TELECOM_MISSION_TLM_IP_PORT; 
+void TELECOM_forward_tlm(void){
+  static OS_SockAddr_t  dest_addr;
+  static bool           dest_set  = false;
+  int32                 os_status = 0;
+  uint32                pkt_count = 0;
+  uint16                port_num  = TELECOM_MISSION_TLM_IP_PORT; 
 
-  const void      *net_buf_p;
-  size_t           net_buf_s;
-  CFE_Status_t     cfe_status;
-  CFE_SB_Buffer_t *sb_buf_p;
+  const void           *net_buf_p;
+  size_t               net_buf_s;
+  CFE_Status_t         cfe_status;
+  CFE_SB_Buffer_t      *sb_buf_p;
+  
 
-  OS_SocketAddrInit(&dest_addr, OS_SocketDomain_INET);
-  OS_SocketAddrSetPort(&dest_addr, port_num);
-  OS_SocketAddrFromString(&dest_addr, TELECOM_data.tlm_dest_ip);
-  os_status = 0;
+  // cahce the memory for the address
+  if (dest_set == false){
+    OS_SocketAddrInit(&dest_addr, OS_SocketDomain_INET);
+    OS_SocketAddrSetPort(&dest_addr, port_num);
+    OS_SocketAddrFromString(&dest_addr, TELECOM_data.tlm_dest_ip);
+    
+    dest_set = true;
+  }
 
   do { 
     cfe_status = CFE_SB_ReceiveBuffer(&sb_buf_p, 

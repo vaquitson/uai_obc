@@ -19,7 +19,6 @@ void TELECOM_task_pipe(const CFE_SB_Buffer_t *sb_buf_p){
   CFE_MSG_GetMsgId(&sb_buf_p->Msg, &msg_id);
 
   if (CFE_SB_MsgId_Equal(msg_id, SEND_HK_MID)){
-     printf("hello");
   } else if (CFE_SB_MsgId_Equal(msg_id, CMD_MID)){
 
   } else {

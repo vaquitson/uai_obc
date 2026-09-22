@@ -1,7 +1,9 @@
 #ifndef TELECOM_TLM_H
 #define TELECOM_TLM_H
 
-void TELECOM_APP_forward_telemetry(void);
-void TELECOM_APP_open_telemetry(void);
+#include "cfe_error.h"
+
+void TELECOM_forward_tlm(void);
+CFE_Status_t TELECOM_open_tlm(void);
 
 #endif

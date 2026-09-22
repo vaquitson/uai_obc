@@ -11,6 +11,8 @@
 #define TELECOM_TLM_SOCK_ERR_EID       7
 #define TELECOM_OPEN_ERR_EID           8
 #define TELECOM_MID_ERR_EID            9
+#define TELECOM_PIPE_INITILIZATION_ERR 10
+#define TELECOM_TLM_INIT_ERR           11
 
 #endif
 
