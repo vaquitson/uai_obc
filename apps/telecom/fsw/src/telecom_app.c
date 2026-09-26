@@ -76,6 +76,12 @@ CFE_Status_t TELECOM_APP_Init(void){
                       "TELECOM: Error initializing telemetry, RC = 0x%08lX", (unsigned long)status);
   }
 
+
+  // Initialize house keeping telemetry msg
+  CFE_MSG_Init(CFE_MSG_PTR(TELECOM_data.hk_tlm.TelemetryHeader), 
+               CFE_SB_ValueToMsgId(OBC_HK_TLM_MID),
+               sizeof(TELECOM_data.hk_tlm));
+
   if (status == CFE_SUCCESS)
     CFE_EVS_SendEvent(TELECOM_INIT_SUCCESFULL_EID, CFE_EVS_EventType_INFORMATION,
                       "TELECOM: Initialized succesfuly, RC = 0x%08lX", (unsigned long)status);

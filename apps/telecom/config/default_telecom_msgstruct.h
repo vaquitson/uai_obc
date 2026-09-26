@@ -5,6 +5,10 @@
 #include "telecom_msgdefs.h"
 
 typedef struct {
+  CFE_MSG_CommandHeader_t CommandHeaded;
+} TELECOM_SendHkCmd_t;
+
+typedef struct {
   CFE_MSG_TelemetryHeader_t TelemetryHeader;
   TELECOM_HkTlm_Payload_t   payload;
 } TELECOM_HkTlm_t;

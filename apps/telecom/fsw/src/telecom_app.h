@@ -3,6 +3,7 @@
 
 #include "cfe_es.h"
 #include "cfe_sb.h"
+#include "telecom_msg.h"
 #include "common_types.h"
 
 void  SAMPLE_APP_Main(void);
@@ -24,6 +25,8 @@ typedef uint32 TELECOM_Err_t;
 #include "telecom_serial.h"
 
 typedef struct {
+  TELECOM_HkTlm_t hk_tlm;
+
   char            tlm_pipe_name[TELECOM_TLM_PIPE_NAME_MAX];
   CFE_SB_PipeId_t tlm_pipe;
 
@@ -31,7 +34,10 @@ typedef struct {
   CFE_SB_PipeId_t cmd_pipe;
 
   LoraController controller;
-  
+
+  uint8 cmd_counter;
+  uint8 err_counter;
+
   uint32          run_status;
   bool            downlink_on;
   bool            suppress_sendto;
@@ -41,6 +47,8 @@ typedef struct {
 #else
 
 typedef struct {
+  TELECOM_HkTlm_t hk_tlm;
+
   char            tlm_pipe_name[TELECOM_TLM_PIPE_NAME_MAX];
   CFE_SB_PipeId_t tlm_pipe;
 
@@ -49,6 +57,9 @@ typedef struct {
 
   char            tlm_dest_ip[17];
   osal_id_t       tlm_sock_id;
+
+  uint8 cmd_counter;
+  uint8 err_counter;
 
   uint32          run_status;
   bool            downlink_on;

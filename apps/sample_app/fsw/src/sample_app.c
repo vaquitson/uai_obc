@@ -154,7 +154,6 @@ CFE_Status_t SAMPLE_APP_Init(void)
 
         CFE_EVS_SendEvent(SAMPLE_APP_INIT_INF_EID, CFE_EVS_EventType_INFORMATION, "Sample App Initialized.%s",
                           VersionString);
-    }
-
+  }
     return status;
 }

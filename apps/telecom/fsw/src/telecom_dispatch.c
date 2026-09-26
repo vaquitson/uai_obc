@@ -2,6 +2,7 @@
 #include "cfe_msg.h"
 #include "telecom_dispatch.h"
 #include "telecom_msgids.h"
+#include "telecom_cmds.h"
 #include "telecom_eventids.h"
 #include "telecom_fcncodes.h"
 
@@ -33,8 +34,10 @@ void TELECOM_task_pipe(const CFE_SB_Buffer_t *sb_buf_p){
   CFE_MSG_GetMsgId(&sb_buf_p->Msg, &msg_id);
 
   if (CFE_SB_MsgId_Equal(msg_id, SEND_HK_MID)){
+    TELECOM_send_hk_cmd((TELECOM_SendHkCmd_t *)sb_buf_p);
 
   } else if (CFE_SB_MsgId_Equal(msg_id, CMD_MID)){
+    TELECOM_process_ground_cmd(sb_buf_p);
 
   } else {
     // unrecognized event id
