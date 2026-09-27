@@ -28,14 +28,28 @@ void OBC_HK_send_hk(const CFE_SB_Buffer_t *sb_buf_p){
 }
 
 void OBC_HK_process_ground_cmd(const CFE_SB_Buffer_t *sb_buf_p){
-  CFE_MSG_FcnCode_t fcn_code = 0;
+  CFE_MSG_FcnCode_t fcn_code;
   CFE_MSG_GetFcnCode(&sb_buf_p->Msg, &fcn_code);
 
   switch (fcn_code){
     case OBC_HK_NOOP_CC:
       OBC_HK_noop_cmd((OBC_HK_NoopCmd_t *)sb_buf_p);
       break;
+
     case OBC_HK_SEND_OBC_INFO_CC:
+      OBC_HK_obc_send_info_cmd((OBC_HK_SendObcInfoCmd_t *)sb_buf_p);
+      break;
+
+    case OBC_HK_SEND_CPU_TEMP_CC:
+      OBC_HK_send_cpu_temp_cmd((OBC_HK_SendCpuTempCmd_t *)sb_buf_p);
+      break;
+
+    case OBC_HK_SEND_RAM_USAGE_CC:
+      OBC_HK_send_ram_usage_cmd((OBC_HK_SendRamUsageCmd_t *)sb_buf_p);
+      break;
+
+    case OBC_HK_SEND_CPU_USAGE_CC:
+      OBC_HK_send_cpu_usage_cmd((OBC_HK_SendCpuUsageCmd_t *)sb_buf_p);
       break;
   }
 }

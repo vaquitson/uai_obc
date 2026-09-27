@@ -1,7 +1,10 @@
 #ifndef OBC_HK_FNCNCODES_H
 #define OBC_HK_FNCNCODES_H
 
-#define OBC_HK_NOOP_CC          103
-#define OBC_HK_SEND_OBC_INFO_CC 104
+#define OBC_HK_NOOP_CC            103
+#define OBC_HK_SEND_OBC_INFO_CC   104
+#define OBC_HK_SEND_CPU_TEMP_CC   105
+#define OBC_HK_SEND_RAM_USAGE_CC  106
+#define OBC_HK_SEND_CPU_USAGE_CC  107
 
 #endif
