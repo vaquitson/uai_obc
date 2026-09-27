@@ -14,19 +14,19 @@ typedef struct {
     float    ram_usage_percent;
     long int ram_usage;
     float    cpu_usage;
-} OBC_HK_SendObcInfoTlm_Payload_t;
+} OBC_HK_ObcInfoTlm_Payload_t;
 
 typedef struct {
     float cpu_temp;
-} OBC_HK_SendCpuTempTlm_Payload_t;
+} OBC_HK_CpuTempTlm_Payload_t;
 
 typedef struct {
     float    ram_usage_percent;
     long int ram_usage;
-} OBC_HK_SendRamUsageTlm_Payload_t;
+} OBC_HK_RamUsageTlm_Payload_t;
 
 typedef struct {
     float cpu_usage;
-} OBC_HK_SendCpuUsageTlm_Payload_t;
+} OBC_HK_CpuUsageTlm_Payload_t;
 
 #endif

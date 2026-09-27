@@ -25,8 +25,8 @@ typedef struct {
 // #### Send OBC INFO ####
 typedef struct {
     CFE_MSG_TelemetryHeader_t       TelemetryHeader;
-    OBC_HK_SendObcInfoTlm_Payload_t Payload;
-} OBC_HK_SendObcInfoTlm_t;
+    OBC_HK_ObcInfoTlm_Payload_t payload;
+} OBC_HK_ObcInfoTlm_t;
 
 typedef struct {
     CFE_MSG_CommandHeader_t CommandHeader;
@@ -35,8 +35,8 @@ typedef struct {
 // #### SEND CPU TEMP
 typedef struct {
     CFE_MSG_TelemetryHeader_t        TelemetryHeader;
-    OBC_HK_SendCpuTempTlm_Payload_t  Payload;
-} OBC_HK_SendCpuTempTlm_t;
+    OBC_HK_CpuTempTlm_Payload_t  payload;
+} OBC_HK_CpuTempTlm_t;
 
 typedef struct {
     CFE_MSG_CommandHeader_t CommandHeader;
@@ -45,8 +45,8 @@ typedef struct {
 // Send Ram Usage
 typedef struct {
     CFE_MSG_TelemetryHeader_t        TelemetryHeader;
-    OBC_HK_SendRamUsageTlm_Payload_t Payload;
-} OBC_HK_SendRamUsageTlm_t;
+    OBC_HK_RamUsageTlm_Payload_t payload;
+} OBC_HK_RamUsageTlm_t;
 
 typedef struct {
     CFE_MSG_CommandHeader_t CommandHeader;
@@ -55,8 +55,8 @@ typedef struct {
 // Send Cpu Usage
 typedef struct {
     CFE_MSG_TelemetryHeader_t        TelemetryHeader;
-    OBC_HK_SendCpuUsageTlm_Payload_t Payload;
-} OBC_HK_SendCpuUsageTlm_t;
+    OBC_HK_CpuUsageTlm_Payload_t payload;
+} OBC_HK_CpuUsageTlm_t;
 
 typedef struct {
     CFE_MSG_CommandHeader_t CommandHeader;
