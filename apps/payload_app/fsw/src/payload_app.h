@@ -7,6 +7,9 @@
 
 #define PAYLOAD_APP_PIPE_NAME "PAYLOAD_APP_PIPE"
 
+/* Scratch buffer big enough for one framed JSON message body */
+#define PAYLOAD_APP_SOCK_BUF_SIZE (PAYLOAD_APP_SOCK_MAX_MSG_SIZE + 1)
+
 typedef struct {
   CFE_SB_PipeId_t cmd_pipe;
 
@@ -14,13 +17,15 @@ typedef struct {
 
   PAYLOAD_APP_HkPacket_t hk_packet;
 
-  /* path read on each cycle by the main loop; seeded from PAYLOAD_APP_DEFAULT_FILE
-  ** at init, kept as a variable so it can later be changed at runtime */
-  char   active_file[PAYLOAD_APP_FILENAME_LEN];
+  /* last message parsed from Payload's socket, and what gets published on
+  ** PAYLOAD_APP_DATA_TLM_MID / printed to stdout */
+  PAYLOAD_APP_DataMsg_t data_msg;
 
-  /* last CSV file parsed into memory, row-major */
-  float  data[PAYLOAD_APP_MAX_ROWS][PAYLOAD_APP_MAX_COLS];
+  /* scratch buffer for the raw JSON body read off the socket each cycle */
+  char sock_buf[PAYLOAD_APP_SOCK_BUF_SIZE];
 } PAYLOAD_APP_GlobalApp_t;
+
+extern PAYLOAD_APP_GlobalApp_t PAYLOAD_APP_Global;
 
 CFE_Status_t PAYLOAD_APP_Init(void);
 void         PAYLOAD_APP_AppMain(void);
@@ -30,7 +35,6 @@ void PAYLOAD_APP_ProcessGroundCommand(const CFE_SB_Buffer_t *sb_buf_ptr);
 
 void PAYLOAD_APP_Noop(void);
 void PAYLOAD_APP_ResetCounters(void);
-void PAYLOAD_APP_ReadFile(const char *file_name);
 
 void PAYLOAD_APP_SendHk(void);
 

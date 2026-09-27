@@ -2,6 +2,8 @@ project(CFE_PAYLOAD_APP C)
 
 set(APP_SRC_FILES
   fsw/src/payload_app.c
+  fsw/src/payload_app_socket.c
+  fsw/src/payload_app_data.c
 )
 
 add_cfe_app(payload_app ${APP_SRC_FILES})

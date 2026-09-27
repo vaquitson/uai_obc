@@ -13,26 +13,44 @@ typedef struct {
 } PAYLOAD_APP_NoArgsCmd_t;
 
 typedef struct {
-  CFE_MSG_CommandHeader_t command_header;
-  char                    file_name[PAYLOAD_APP_FILENAME_LEN];
-} PAYLOAD_APP_ReadFileCmd_t;
-
-typedef struct {
   CFE_MSG_TelemetryHeader_t telemetry_header;
 
   uint8  cmd_counter;
   uint8  err_counter;
-  uint8  last_read_valid;
+  uint8  socket_connected;
   uint8  spare;
 
-  uint32 rows_read;
-  uint32 cols_read;
+  uint32 msgs_received;
+  uint32 parse_errors;
 
-  float  value_sum;
-  float  value_min;
-  float  value_max;
-
-  char   last_file[PAYLOAD_APP_FILENAME_LEN];
+  int32  last_request_id;
+  uint8  last_status_code;
 } PAYLOAD_APP_HkPacket_t;
+
+/*
+** Telemetry published from each Payload socket message. Mirrors the
+** request/response envelope {request_id, status, status_code, data}
+** delivered by Payload over the Unix socket, with "data" parsed into a
+** provisional ADS-B-like typed schema (no official schema from Payload
+** yet - revise field list once one is defined).
+*/
+typedef struct {
+  CFE_MSG_TelemetryHeader_t telemetry_header;
+
+  int32  request_id;
+  uint8  status_code;
+  char   status[PAYLOAD_APP_STATUS_LEN];
+
+  char   icao24[PAYLOAD_APP_ICAO24_LEN];
+  char   callsign[PAYLOAD_APP_CALLSIGN_LEN];
+
+  double latitude;
+  double longitude;
+  float  altitude;
+  float  ground_speed;
+  float  heading;
+  float  vertical_rate;
+  double timestamp;
+} PAYLOAD_APP_DataMsg_t;
 
 #endif

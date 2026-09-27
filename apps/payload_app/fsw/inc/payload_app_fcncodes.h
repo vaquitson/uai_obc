@@ -7,7 +7,4 @@
 /** Reset the command/error counters */
 #define PAYLOAD_APP_RESET_COUNTERS_CC 1
 
-/** Open, read and parse the CSV file named in the command payload */
-#define PAYLOAD_APP_READ_FILE_CC 2
-
 #endif
