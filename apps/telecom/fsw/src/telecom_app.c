@@ -15,14 +15,13 @@
 #include "telecom_tlm.h"
 #include "telecom_app.h"
 #include "telecom_encode.h"
-
-
 #include "obc_hk_msg.h"
+
+// subscription array
 uint32 TLM_SUBSCRIPTION_ARR[] = {
   OBC_HK_HK_MID,
-  OBC_HK_OBC_INFO_MID
+  OBC_HK_OBC_SEND_INFO_MID
 };
-
 
 TELECOM_GlobalApp_t TELECOM_data;
 
@@ -35,10 +34,14 @@ CFE_Status_t TELECOM_init_pipes(void){
     CFE_EVS_SendEvent(TELECOM_PIPE_CREATION_ERR_EID, CFE_EVS_EventType_ERROR,
                       "TELECOM: Faild to properly crate the tlm pipe,  RC = 0x%08lX", (unsigned long)status);
 
-  status = CFE_SB_Subscribe(CFE_SB_ValueToMsgId(OBC_HK_OBC_INFO_MID), TELECOM_data.tlm_pipe);
-  if (status != CFE_SUCCESS)
-    CFE_EVS_SendEvent(TELECOM_SUBSCRIPTION_ERR_EID, CFE_EVS_EventType_ERROR,
-                      "TELECOM: Faild to subscribe to OBC HK,  RC = 0x%08lX", (unsigned long)status);
+
+  for (int i = 0; i < sizeof(TLM_SUBSCRIPTION_ARR)/sizeof(uint32); i++){
+    status = CFE_SB_Subscribe(CFE_SB_ValueToMsgId(TLM_SUBSCRIPTION_ARR[i]), TELECOM_data.tlm_pipe);
+    if (status != CFE_SUCCESS){
+      CFE_EVS_SendEvent(TELECOM_SUBSCRIPTION_ERR_EID, CFE_EVS_EventType_ERROR,
+                        "TELECOM: Faild to subscribe to OBC HK,  RC = 0x%08lX", (unsigned long)status);
+    }
+  }
 
   strncpy(TELECOM_data.cmd_pipe_name, TELECOM_CMD_PIPE_NAME, TELECOM_CMD_PIPE_NAME_MAX);
   status = CFE_SB_CreatePipe(&TELECOM_data.cmd_pipe, 10, TELECOM_data.cmd_pipe_name);
@@ -46,7 +49,6 @@ CFE_Status_t TELECOM_init_pipes(void){
     CFE_EVS_SendEvent(TELECOM_PIPE_CREATION_ERR_EID, CFE_EVS_EventType_ERROR,
                       "TELECOM: Faild to properly crate the cmd pipe,  RC = 0x%08lX", (unsigned long)status);
  
-
   status = CFE_SB_Subscribe(CFE_SB_ValueToMsgId(TELECOM_CMD_MID), TELECOM_data.tlm_pipe);
   if (status != CFE_SUCCESS)
     CFE_EVS_SendEvent(TELECOM_SUBSCRIPTION_ERR_EID, CFE_EVS_EventType_ERROR,
