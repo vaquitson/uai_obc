@@ -10,9 +10,8 @@
 
 set(OBC_HK_MISSION_CONFIG_FILE_LIST
   obc_hk_msg.h
-  obc_hk_msgid_values.h
   obc_hk_msgids.h
-  obc_hk_topicid_values.h
+  obc_hk_msgstructs.h
   obc_hk_msgdefs.h
 )
 

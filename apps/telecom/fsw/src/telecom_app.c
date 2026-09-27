@@ -4,11 +4,8 @@
 #include <stdio.h>
 #include "cfe_evs.h"
 
-#include "obc_hk_msg.h"
-#include "obc_hk_msgdefs.h"
 
 #include "cmd_hand_msgids.h"
-
 #include "telecom_interface_cfg.h"
 #include "telecom_internal_cfg.h"
 #include "telecom_msgids.h"
@@ -18,6 +15,14 @@
 #include "telecom_tlm.h"
 #include "telecom_app.h"
 #include "telecom_encode.h"
+
+
+#include "obc_hk_msg.h"
+uint32 TLM_SUBSCRIPTION_ARR[] = {
+  OBC_HK_HK_MID,
+  OBC_HK_OBC_INFO_MID
+};
+
 
 TELECOM_GlobalApp_t TELECOM_data;
 
@@ -30,7 +35,7 @@ CFE_Status_t TELECOM_init_pipes(void){
     CFE_EVS_SendEvent(TELECOM_PIPE_CREATION_ERR_EID, CFE_EVS_EventType_ERROR,
                       "TELECOM: Faild to properly crate the tlm pipe,  RC = 0x%08lX", (unsigned long)status);
 
-  status = CFE_SB_Subscribe(CFE_SB_ValueToMsgId(OBC_HK_TLM_MID), TELECOM_data.tlm_pipe);
+  status = CFE_SB_Subscribe(CFE_SB_ValueToMsgId(OBC_HK_OBC_INFO_MID), TELECOM_data.tlm_pipe);
   if (status != CFE_SUCCESS)
     CFE_EVS_SendEvent(TELECOM_SUBSCRIPTION_ERR_EID, CFE_EVS_EventType_ERROR,
                       "TELECOM: Faild to subscribe to OBC HK,  RC = 0x%08lX", (unsigned long)status);
@@ -79,7 +84,7 @@ CFE_Status_t TELECOM_APP_Init(void){
 
   // Initialize house keeping telemetry msg
   CFE_MSG_Init(CFE_MSG_PTR(TELECOM_data.hk_tlm.TelemetryHeader), 
-               CFE_SB_ValueToMsgId(OBC_HK_TLM_MID),
+               CFE_SB_ValueToMsgId(TELECOM_HK_TLM_MID),
                sizeof(TELECOM_data.hk_tlm));
 
   if (status == CFE_SUCCESS)

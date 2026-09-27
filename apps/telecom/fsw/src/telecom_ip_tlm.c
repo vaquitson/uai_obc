@@ -4,6 +4,7 @@
 
 #include "telecom_app.h"
 #include "telecom_interface_cfg.h"
+#include "telecom_internal_cfg.h"
 #include "telecom_encode.h"
 #include "telecom_eventids.h"
 
@@ -11,7 +12,8 @@
 CFE_Status_t TELECOM_open_tlm(void){
   int32 status;
   
-  strcpy(&TELECOM_data.tlm_dest_ip, TELECOM_MISSION_TLM_IP_ADDR);
+  TELECOM_data.downlink_on = true;
+  strcpy(TELECOM_data.tlm_dest_ip, TELECOM_MISSION_TLM_IP_ADDR);
 
   status = OS_SocketOpen(&TELECOM_data.tlm_sock_id, 
                          OS_SocketDomain_INET, 

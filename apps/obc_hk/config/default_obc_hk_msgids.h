@@ -7,7 +7,10 @@
 
 #include "cfe_core_api_base_msgids.h"
 
-#define OBC_HK_TLM_MID            100 
-#define OBC_HK_SEND_TLM_MID       101
+#define OBC_HK_CMD_MID            100 
+#define OBC_HK_SEND_HK_MID        101
+
+#define OBC_HK_HK_MID             102
+#define OBC_HK_OBC_INFO_MID       103
 
 #endif

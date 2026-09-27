@@ -4,4 +4,6 @@
 #define TELECOM_CMD_MID      122 
 #define TELECOM_SEND_HK_MID  123 
 
+#define TELECOM_HK_TLM_MID   124
+
 #endif

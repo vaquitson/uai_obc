@@ -23,7 +23,7 @@ CFE_Status_t OBC_HK_pipe_init(void){
                              OBC_HK_PLAFORM_PIPE_DEPTH,
                              OBC_HK_CMD_PIPE_NAME); 
 
-  CFE_SB_Subscribe(CFE_SB_ValueToMsgId(OBC_HK_SEND_TLM_MID), OBC_HK_data.cmd_pipe);
+  CFE_SB_Subscribe(CFE_SB_ValueToMsgId(OBC_HK_CMD_MID), OBC_HK_data.cmd_pipe);
 
   if (status != CFE_SUCCESS){
    CFE_EVS_SendEvent(OBC_HK_PIPE_CREATION_ERR_EID, CFE_EVS_EventType_ERROR,
@@ -47,9 +47,9 @@ CFE_Status_t OBC_HK_Init(void){
 
   status = OBC_HK_pipe_init();
   if (status == CFE_SUCCESS){
-    status = CFE_MSG_Init(CFE_MSG_PTR(OBC_HK_data.hk_packet.telemetry_header),
-                          CFE_SB_ValueToMsgId(OBC_HK_TLM_MID),
-                          sizeof(OBC_HK_data.hk_packet));
+    status = CFE_MSG_Init(CFE_MSG_PTR(OBC_HK_data.hk_tlm.TelemetryHeader),
+                          CFE_SB_ValueToMsgId(OBC_HK_HK_MID),
+                          sizeof(OBC_HK_data.hk_tlm));
 
     if (status != CFE_SUCCESS){
       CFE_EVS_SendEvent(OBC_HK_MSG_INIT_FAILURE_EID, CFE_EVS_EventType_ERROR,

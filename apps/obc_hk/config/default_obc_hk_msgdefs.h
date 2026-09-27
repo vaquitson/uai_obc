@@ -4,15 +4,16 @@
 #include "cfe_sb.h"
 
 typedef struct {
-  CFE_MSG_TelemetryHeader_t telemetry_header;
+  uint8          cmd_counter;
+  uint8          err_counter;
+} OBC_HK_KkTlm_Payload_t;
+
+typedef struct {
   float          cpu_temp;
   float          ram_usage_percent;
   long int       ram_usage;
   float          cpu_usage;
-
-  uint8          cmd_counter;
-  uint8          err_counter;
-} OBC_HK_HkPacket_t;
+} OBC_HK_SendObcInfo_Payload_t;
 
 
 #endif

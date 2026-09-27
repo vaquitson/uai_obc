@@ -1,6 +1,6 @@
 # OBC_HK 100 - 110
-* OBC_HK_SEND_HK 100
-* OBC_HK_CMD 101
+* OBC_HK_CMD_MID            100 
+* OBC_HK_SEND_HK_MID        101
 
 ## OBC_HK Command codes
 * OBC_HK_TLM_MID            100 

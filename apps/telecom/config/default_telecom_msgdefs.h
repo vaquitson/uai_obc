@@ -5,7 +5,7 @@
 
 typedef struct {
   uint8 command_counter;
-  uint8 command_err_counter;
+  uint8 err_counter;
 } TELECOM_HkTlm_Payload_t;
 
 #ifdef COMMUNICATION_LORA

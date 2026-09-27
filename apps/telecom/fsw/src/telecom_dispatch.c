@@ -19,7 +19,6 @@ void TELECOM_process_ground_cmd(const CFE_SB_Buffer_t *sb_buf_p){
 
 }
 
-
 void TELECOM_task_pipe(const CFE_SB_Buffer_t *sb_buf_p){
   static CFE_SB_MsgId_t CMD_MID     = CFE_SB_MSGID_RESERVED;
   static CFE_SB_MsgId_t SEND_HK_MID = CFE_SB_MSGID_RESERVED;
