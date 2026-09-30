@@ -12,7 +12,12 @@
 #include "telecom_encode.h"
 #include "telecom_internal_cfg.h"
 
-
+/*
+  * Implementation in case of LoRa Comunication
+  * Initialices the telemetry
+  *
+  *
+  */
 CFE_Status_t TELECOM_open_tlm(void){
   int fd;
 

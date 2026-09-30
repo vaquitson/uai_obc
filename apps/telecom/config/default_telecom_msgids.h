@@ -5,5 +5,6 @@
 #define TELECOM_SEND_HK_MID  123 
 
 #define TELECOM_HK_TLM_MID   124
+#define TELECOM_OPEN_TLM_MID 125 
 
 #endif

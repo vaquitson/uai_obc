@@ -2,40 +2,85 @@
 #include <stdint.h>
 #include <string.h>
 #include "osapi.h"
+#define _DEFAULT_SOURCE
 #include "telecom_lora_controller.h"
+#include <fcntl.h>
+#include <termios.h>
 
 #define MAX_FRQ_LEN 8
 
-/**
- * @brief Initialize the controller with an undefined handle and an invalid state.
- *
- * Does not open a device or close a previously assigned handle.
- *
- * @param[out] cont Controller to initialize; must not be NULL.
- */
-void lora_controller_init(LoraController *cont){
-  cont->fd = -1;
-  cont->state = CONTROLLER_SATE_INVALID;
+void set_8n1_confg(struct termios *tty){
+  tty->c_cflag &= ~PARENB;
+  tty->c_cflag &= ~CSTOPB;
+  tty->c_cflag &= ~CSIZE;
+  tty->c_cflag |= CS8;
 }
 
-/**
- * @brief Set the OSAL handle used for controller I/O.
- 
- * @param[in,out] cont Controller to update; must not be NULL.
- * @param[in] fd OSAL handle, not a native POSIX file descriptor.
- */
+int serial_port_open(const char *dev_path){
+  struct termios tty;
+  int fd;
+  
+  // linux dependent part
+  fd = open(dev_path, O_RDWR | O_NOCTTY);
+  if (fd > 0){
+    // get the current terminal configuration
+    tcgetattr(fd, &tty);
+
+    // disable terminal preprocesing
+    cfmakeraw(&tty);
+
+    // In and Out BAUD rate
+    cfsetispeed(&tty, B115200);
+    cfsetospeed(&tty, B115200);
+
+    // Mierda de muy bajo nivel que no tengo ni idea
+    set_8n1_confg(&tty);
+
+    tcsetattr(fd, TCSANOW, &tty);
+    return fd;
+
+  } else {
+
+    return -1;
+  }
+}
+
+
+const char *lora_controller_get_uplink_freq(const LoraController *con){
+  return con->uplink_freq;
+}
+
+
+const char *lora_controller_get_downlink_freq(const LoraController *con){
+  return con->downlik_freq;
+}
+
+
 void lora_controller_set_fd(LoraController *cont, osal_id_t fd){
  cont->fd = fd;
 }
 
-/**
- * @brief Return the stored OSAL handle without validating it.
- *
- * @param[in] cont Controller to query; must not be NULL.
- * @return Stored handle, or OS_OBJECT_ID_UNDEFINED after initialization.
- */
+
 osal_id_t lora_controller_get_fd(LoraController *cont){
  return cont->fd;
+}
+
+
+bool lora_controller_uplink_freq_is_set(const LoraController *cont){
+  if (strlen(lora_controller_get_uplink_freq(cont)) != 0){
+    return true;
+  }
+
+  return false;
+}
+
+
+bool lora_controller_downlink_freq_is_set(const LoraController *cont){
+  if (strlen(lora_controller_get_uplink_freq(cont)) != 0){
+    return true;
+  }
+
+  return false;
 }
 
 
@@ -47,7 +92,7 @@ osal_id_t lora_controller_get_fd(LoraController *cont){
  */
 void priv_lora_controller_set_state(LoraController *cont, int state){
  cont->state = state;
-}
+} 
 
 /**
  * @brief Return the cached state without querying the device.
@@ -58,6 +103,27 @@ void priv_lora_controller_set_state(LoraController *cont, int state){
 int lora_controller_get_state(LoraController *cont){
  return cont->state;
 }
+
+
+int lora_controller_init(LoraController *cont, const char *path){
+  int fd;
+  if (path != NULL){
+    fd = serial_port_open(path);
+    if (fd > 0){
+      cont->fd = fd;
+
+    } else {
+      return -1;    
+    }
+  }
+
+  cont->state = CONTROLLER_SATE_INVALID;
+  memset(cont->downlik_freq, 0, sizeof(cont->downlik_freq));
+  memset(cont->uplink_freq, 0, sizeof(cont->uplink_freq));
+
+  return 0;
+}
+
 
 /**
  * @brief Write a frequency command using the controller's OSAL handle.
@@ -70,16 +136,16 @@ int lora_controller_get_state(LoraController *cont){
  * @param[in] cont Controller with an assigned OSAL handle.
  * @param[in] freq_str Null-terminated frequency string, at most MAX_FRQ_LEN
  *                    characters. Only its length is validated.
+ *
  * @retval LORA_CONTROLLER_SUCCESS The entire command was written.
  * @retval LORA_CONTROLLER_NULL_PTR_ERR cont or freq_str is NULL.
  * @retval LORA_CONTROLLER_FD_ERR The stored handle is undefined.
  * @retval LORA_CONTROLLER_FREQ_ERR The frequency string is too long.
  * @retval LORA_CONTROLLER_WRITING_ERR Write error, timeout, or partial write.
  *
- * @note Uses a shared static command buffer; concurrent calls must be serialized.
  */
 int lora_controller_set_freq(LoraController *cont, const char *freq_str){ 
-  static char buf[50] = {0};
+  char buf[50] = {0};
   int32 bytes;
   size_t cmd_len;
   osal_id_t fd;
@@ -102,28 +168,34 @@ int lora_controller_set_freq(LoraController *cont, const char *freq_str){
     } else {
       return LORA_CONTROLLER_WRITING_ERR;
     }
+
   } else {
     return LORA_CONTROLLER_FREQ_ERR;
   }
 }
 
 
-/**
- * @brief Write a payload, configuring SEND_FREQ first if necessary.
- *
- * When the cached state is not CONTROLLER_SATE_SEND, writes the frequency
- * command and updates the state on success. Then performs one payload write.
- * Each I/O operation has its own 1000 ms timeout; switching frequency and
- * writing the payload can therefore require two separate waits.
- *
- * @param[in,out] cont Controller with an assigned OSAL handle.
- * @param[in] payload Data to send; need not be null-terminated.
- * @param[in] payload_len Number of bytes to write; must be greater than zero.
- * @return Nonnegative number of bytes written, which may be less than
- *         payload_len; partial writes are not retried. Returns -1 for NULL
- *         arguments or frequency setup failure. Otherwise returns the OSAL
- *         write error, including OS_ERROR_TIMEOUT if the payload write times out.
- */
+void lora_controller_set_uplink_freq(LoraController *cont, char *freq){
+  size_t len;
+  len = strlen(freq); 
+
+  if (len > 7){
+    memcpy(cont->uplink_freq, freq, len+1); 
+    lora_controller_set_freq(cont, freq);
+  }  
+}
+
+
+void lora_controller_set_downlik_freq(LoraController *cont, char *freq){
+  size_t len;
+  len = strlen(freq); 
+
+  if (len > 7){
+    memcpy(cont->downlik_freq, freq, len+1); 
+  }
+}
+
+
 int32 lora_controller_send(LoraController *cont, const char *payload, size_t payload_len){
   int rc;
   int32 bytes;
@@ -138,10 +210,12 @@ int32 lora_controller_send(LoraController *cont, const char *payload, size_t pay
       }
     }
 
-    bytes = OS_TimedWrite(lora_controller_get_fd(cont),
-                  payload,
-                  payload_len,
-                  LORA_CONTROLLER_IO_TIMEOUT_MS);
+    bytes = OS_TimedWrite(
+      lora_controller_get_fd(cont),
+      payload,
+      payload_len,
+      LORA_CONTROLLER_IO_TIMEOUT_MS);
+
     return bytes;
   }
 
@@ -149,25 +223,6 @@ int32 lora_controller_send(LoraController *cont, const char *payload, size_t pay
 }
 
 
-
-/**
- * @brief Read available data, configuring RECV_FREQ first if necessary.
- *
- * When the cached state is not CONTROLLER_SATE_RECV, writes the frequency
- * command and updates the state on success. Then performs one read without
- * waiting for the entire buffer to fill or adding a string terminator.
- * Each I/O operation has its own 1000 ms timeout; switching frequency and
- * reading data can therefore require two separate waits.
- *
- * @param[in,out] cont Controller with an assigned OSAL handle.
- * @param[out] buf Destination buffer for the received bytes.
- * @param[in] buf_size Buffer capacity in bytes; must be greater than zero.
- * @param[in] err Unused parameter; may be NULL and is never modified.
- * @return Number of bytes read, or 0 at end of stream. Returns -1 for a NULL
- *         controller or buffer, zero buffer capacity, or frequency setup
- *         failure. Otherwise returns the OSAL read error, including
- *         OS_ERROR_TIMEOUT if no data arrives before the read timeout.
- */
 int32 lora_controller_recv(LoraController *cont, 
                             char *buf, size_t buf_size, 
                              int *err){
@@ -175,22 +230,30 @@ int32 lora_controller_recv(LoraController *cont,
   int32 bytes;
 
   if (cont != NULL && buf != NULL && buf_size > 0){
-    if (lora_controller_get_state(cont) != CONTROLLER_SATE_RECV){
-      rc = lora_controller_set_freq(cont, RECV_FREQ);
-      if (rc < 0){
-        return -1;
+    if (lora_controller_uplink_freq_is_set(cont)){
+      if (lora_controller_get_state(cont) != CONTROLLER_SATE_RECV){
+        rc = lora_controller_set_freq(cont, RECV_FREQ);
+        if (rc == LORA_CONTROLLER_SUCCESS){
+          priv_lora_controller_set_state(cont, CONTROLLER_SATE_RECV);
+        } else {
+          *err = rc;
+          return -1;
+        }
       }
-      priv_lora_controller_set_state(cont, CONTROLLER_SATE_RECV);
+
+      bytes = OS_TimedRead(
+        lora_controller_get_fd(cont),
+        buf,
+        buf_size,
+        LORA_CONTROLLER_IO_TIMEOUT_MS);
+
+      return bytes;
+
+    } else {
+      *err = LORA_CONTROLLER_FREQ_IS_NOT_SET;
+      return -1;
     }
-
-    bytes = OS_TimedRead(
-      lora_controller_get_fd(cont),
-      buf,
-      buf_size,
-      LORA_CONTROLLER_IO_TIMEOUT_MS);
-
-    return bytes;
+  } else {
+    return -1;
   }
-
-  return -1;
 }

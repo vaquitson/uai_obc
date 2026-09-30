@@ -18,10 +18,17 @@ typedef struct {
 } TELECOM_NoopCmd_t;
 
 
+// #### Open Tlm
 typedef struct {
   CFE_MSG_CommandHeader_t CommandHeader;
-  TELECOM_EnableOutput_Payload_t payload;
-} TELECOM_EnableOutputCmd_t;
+  TELECOM_OpenTlmCmd_Payload_t Payload;
+} TELECOM_OpenTlmCmd_t;
+
+typedef struct {
+  CFE_MSG_TelemetryHeader_t TelemetryHeader;
+  TELECOM_OpenTlmTlm_Payload_t Payload;
+} TELECOM_OpenTlmTlm_t;
+
 
 #endif
 

@@ -10,16 +10,20 @@ typedef struct {
 
 #ifdef COMMUNICATION_LORA
 typedef struct {
-  char listening_freq[16];
-  char sending_freq[16];
-} TELECOM_EnableOutput_Payload_t;
+  char downlink_freq[16];
+  char uplink_freq[16];
+} TELECOM_OpenTlmCmd_Payload_t;
 
 #else
 typedef struct {
   char dest_IP[16];
-} TELECOM_EnableOutput_Payload_t;
+  char dest_port[16];
+} TELECOM_OpenTlmCmd_Payload_t;
 
 #endif
 
+typedef struct {
+  uint32 status_code;
+} TELECOM_OpenTlmTlm_Payload_t;
 
 #endif

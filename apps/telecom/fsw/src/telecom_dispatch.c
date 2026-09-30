@@ -11,10 +11,9 @@ void TELECOM_process_ground_cmd(const CFE_SB_Buffer_t *sb_buf_p){
   CFE_MSG_GetFcnCode(&sb_buf_p->Msg, &fcn_code);
   
   switch (fcn_code){
-    case TELECOM_NOOP_CMD:
-
-      break;
-    
+    case TELECOM_OPEN_TLM_CC:
+      
+      break; 
   }
 
 }

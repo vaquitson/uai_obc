@@ -1,7 +1,5 @@
 #include "telecom_serial.h"
 #include "osapi.h"
-#include <termios.h>
-#include <fcntl.h>
 
 
 void set_8n1_confg(struct termios *tty){

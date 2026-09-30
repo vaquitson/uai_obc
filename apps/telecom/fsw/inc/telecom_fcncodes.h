@@ -1,6 +1,7 @@
 #ifndef TELECOM_FCNCODES_H
 #define TELECOM_FCNCODES_H
 
-#define TELECOM_NOOP_CMD 1
+#define TELECOM_NOOP_CMD     1
+#define TELECOM_OPEN_TLM_CC  2
 
 #endif
