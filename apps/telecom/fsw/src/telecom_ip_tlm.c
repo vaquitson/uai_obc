@@ -9,11 +9,13 @@
 #include "telecom_eventids.h"
 
 
-CFE_Status_t TELECOM_open_tlm(void){
+CFE_Status_t TELECOM_open_tlm(const void *ptr){
   int32 status;
+  const TELECOM_OpenTlmCmd_Payload_t *data = (TELECOM_OpenTlmCmd_Payload_t *)ptr;
   
   TELECOM_data.downlink_on = true;
-  strcpy(TELECOM_data.tlm_dest_ip, TELECOM_MISSION_TLM_IP_ADDR);
+  strcpy(TELECOM_data.tlm_dest_ip, data->dest_IP);
+  strcpy(TELECOM_data.tlm_port, data->dest_port);
 
   status = OS_SocketOpen(&TELECOM_data.tlm_sock_id, 
                          OS_SocketDomain_INET, 
@@ -38,7 +40,7 @@ void TELECOM_forward_tlm(void){
   static bool           dest_set  = false;
   int32                 os_status = 0;
   uint32                pkt_count = 0;
-  uint16                port_num  = TELECOM_MISSION_TLM_IP_PORT; 
+  //uint16                port_num  = TELECOM_MISSION_TLM_IP_PORT; 
 
   const void           *net_buf_p;
   size_t               net_buf_s;
@@ -49,9 +51,8 @@ void TELECOM_forward_tlm(void){
   // cache the memory for the address (stack)
   if (dest_set == false){
     OS_SocketAddrInit(&dest_addr, OS_SocketDomain_INET);
-    OS_SocketAddrSetPort(&dest_addr, port_num);
-    OS_SocketAddrFromString(&dest_addr, TELECOM_data.tlm_dest_ip);
-    
+    OS_SocketAddrSetPort(&dest_addr, atol(TELECOM_data.tlm_port));
+    OS_SocketAddrFromString(&dest_addr, TELECOM_data.tlm_dest_ip); 
     dest_set = true;
   }
 
@@ -61,7 +62,8 @@ void TELECOM_forward_tlm(void){
                                       TELECOM_PLATFORM_TLM_PIPE_TIMEOUT);
 
 
-    if (cfe_status == CFE_SUCCESS && TELECOM_data.suppress_sendto != false){
+    if (cfe_status == CFE_SUCCESS){
+      printf("Hello 3\n");
       os_status = OS_SUCCESS;
 
       if (TELECOM_data.downlink_on == true) {

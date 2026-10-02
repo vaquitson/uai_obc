@@ -23,12 +23,20 @@ CFE_Status_t TELECOM_send_hk_cmd(const TELECOM_SendHkCmd_t *data){
 }
 
 CFE_Status_t TELECOM_open_tlm_cmd(const TELECOM_OpenTlmCmd_t *data){
-  CFE_Status_t status;
+  CFE_Status_t status = 0;
   CFE_EVS_SendEvent(TELECOM_CMD_RECIVED, 
                     CFE_EVS_EventType_INFORMATION,
                     "TELECOM: TELECOM_open_tlm_cmd recived");
 
   status = TELECOM_open_tlm(&(data->payload));
+
+  printf("status = %d\n", status);
+  TELECOM_OpenTlmTlm_t msg;    
+  CFE_MSG_Init(CFE_MSG_PTR(msg.TelemetryHeader),CFE_SB_ValueToMsgId(TELECOM_OPEN_TLM_MID), sizeof(msg));
+  msg.payload.status_code = status;
+
+  CFE_SB_TransmitMsg(CFE_MSG_PTR(msg.TelemetryHeader), true);
+
   return status;
 }
 

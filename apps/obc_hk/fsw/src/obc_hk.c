@@ -89,7 +89,9 @@ void OBC_HK_AppMain(void){
                    sizeof(msg));
 
       CFE_MSG_SetFcnCode(CFE_MSG_PTR(msg.CommandHeader), 2);
-      
+      strcpy(msg.payload.dest_IP, "127.0.0.1");
+      strcpy(msg.payload.dest_port, "2234");  
+
       OS_TaskDelay(2000);
       CFE_SB_TransmitMsg(CFE_MSG_PTR(msg.CommandHeader), true);
       vooolatile = true;

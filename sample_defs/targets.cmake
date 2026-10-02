@@ -101,9 +101,8 @@ SET(FT_INSTALL_SUBDIR "host/functional-test")
 
 # Each target board can have its own HW arch selection and set of included apps
 SET(MISSION_CPUNAMES cpu1)
-
 # MISSION LINUX FLAG
-SET(OBC_PLATFORM_LINUX 1)
+# SET(OBC_PLATFORM_LINUX 1)
 
 # MISSION COMM FLAG
 # SET(COMMUNICATION_LORA 1)
