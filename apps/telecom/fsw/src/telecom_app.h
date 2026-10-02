@@ -22,7 +22,6 @@ typedef uint32 TELECOM_Err_t;
 #ifdef COMMUNICATION_LORA
 
 #include "telecom_lora_controller.h"
-#include "telecom_serial.h"
 
 typedef struct {
   TELECOM_HkTlm_t hk_tlm;

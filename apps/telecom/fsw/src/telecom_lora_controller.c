@@ -1,8 +1,8 @@
+#define _DEFAULT_SOURCE
 #include <stdio.h>
 #include <stdint.h>
 #include <string.h>
 #include "osapi.h"
-#define _DEFAULT_SOURCE
 #include "telecom_lora_controller.h"
 #include <fcntl.h>
 #include <termios.h>
@@ -52,7 +52,7 @@ const char *lora_controller_get_uplink_freq(const LoraController *con){
 
 
 const char *lora_controller_get_downlink_freq(const LoraController *con){
-  return con->downlik_freq;
+  return con->downlink_freq;
 }
 
 
@@ -111,14 +111,13 @@ int lora_controller_init(LoraController *cont, const char *path){
     fd = serial_port_open(path);
     if (fd > 0){
       cont->fd = fd;
-
     } else {
-      return -1;    
+      return fd;    
     }
   }
 
   cont->state = CONTROLLER_SATE_INVALID;
-  memset(cont->downlik_freq, 0, sizeof(cont->downlik_freq));
+  memset(cont->downlink_freq, 0, sizeof(cont->downlink_freq));
   memset(cont->uplink_freq, 0, sizeof(cont->uplink_freq));
 
   return 0;
@@ -191,7 +190,7 @@ void lora_controller_set_downlik_freq(LoraController *cont, char *freq){
   len = strlen(freq); 
 
   if (len > 7){
-    memcpy(cont->downlik_freq, freq, len+1); 
+    memcpy(cont->downlink_freq, freq, len+1); 
   }
 }
 
@@ -202,7 +201,7 @@ int32 lora_controller_send(LoraController *cont, const char *payload, size_t pay
 
   if (payload != NULL && cont != NULL){
     if (lora_controller_get_state(cont) != CONTROLLER_SATE_SEND){
-      rc = lora_controller_set_freq(cont, SEND_FREQ);
+      rc = lora_controller_set_freq(cont, lora_controller_get_downlink_freq(cont));
       if (rc == LORA_CONTROLLER_SUCCESS){
         priv_lora_controller_set_state(cont, CONTROLLER_SATE_SEND);
       } else {
@@ -232,7 +231,7 @@ int32 lora_controller_recv(LoraController *cont,
   if (cont != NULL && buf != NULL && buf_size > 0){
     if (lora_controller_uplink_freq_is_set(cont)){
       if (lora_controller_get_state(cont) != CONTROLLER_SATE_RECV){
-        rc = lora_controller_set_freq(cont, RECV_FREQ);
+        rc = lora_controller_set_freq(cont, lora_controller_get_uplink_freq(cont));
         if (rc == LORA_CONTROLLER_SUCCESS){
           priv_lora_controller_set_state(cont, CONTROLLER_SATE_RECV);
         } else {

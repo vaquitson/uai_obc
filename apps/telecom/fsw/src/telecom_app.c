@@ -20,7 +20,6 @@
 // subscription array
 uint32 TLM_SUBSCRIPTION_ARR[] = {
   OBC_HK_HK_MID,
-  OBC_HK_HK_MID,
   OBC_HK_OBC_INFO_MID,
   OBC_HK_CPU_TEMP_MID,
   OBC_HK_RAM_USAGE_MID,
@@ -53,11 +52,10 @@ CFE_Status_t TELECOM_init_pipes(void){
     CFE_EVS_SendEvent(TELECOM_PIPE_CREATION_ERR_EID, CFE_EVS_EventType_ERROR,
                       "TELECOM: Faild to properly crate the cmd pipe,  RC = 0x%08lX", (unsigned long)status);
  
-  status = CFE_SB_Subscribe(CFE_SB_ValueToMsgId(TELECOM_CMD_MID), TELECOM_data.tlm_pipe);
+  status = CFE_SB_Subscribe(CFE_SB_ValueToMsgId(TELECOM_CMD_MID), TELECOM_data.cmd_pipe);
   if (status != CFE_SUCCESS)
     CFE_EVS_SendEvent(TELECOM_SUBSCRIPTION_ERR_EID, CFE_EVS_EventType_ERROR,
                       "TELECOM: Faild to subscribe to TELECOM CMD MID,  RC = 0x%08lX", (unsigned long)status);
-
 
   return status;
 }
@@ -80,13 +78,6 @@ CFE_Status_t TELECOM_APP_Init(void){
     CFE_EVS_SendEvent(TELECOM_PIPE_INITILIZATION_ERR, CFE_EVS_EventType_ERROR, 
                       "TELECOM: Initialized succesfuly, RC = 0x%08lX", (unsigned long)status);
   }
-  
-  status = TELECOM_open_tlm();
-  if (status != CFE_SUCCESS){
-    CFE_EVS_SendEvent(TELECOM_TLM_INIT_ERR, CFE_EVS_EventType_ERROR, 
-                      "TELECOM: Error initializing telemetry, RC = 0x%08lX", (unsigned long)status);
-  }
-
 
   // Initialize house keeping telemetry msg
   CFE_MSG_Init(CFE_MSG_PTR(TELECOM_data.hk_tlm.TelemetryHeader), 
@@ -110,6 +101,7 @@ void TELECOM_process_cmd(void){
     if (status != CFE_SUCCESS){
       break;
     }
+
     TELECOM_task_pipe(sb_buf_p);
   }
 }
@@ -122,10 +114,12 @@ void TELECOM_AppMain(void){
 
   while (CFE_ES_RunLoop(&TELECOM_data.run_status) == true){
     OS_TaskDelay(TELECOM_PLATFORM_TASK_MSEC);
-    TELECOM_process_cmd();
-    TELECOM_forward_tlm(); 
-  }
 
+    TELECOM_process_cmd();
+    if (TELECOM_data.downlink_on == true){
+      TELECOM_forward_tlm(); 
+    }
+  }
   CFE_ES_ExitApp(TELECOM_data.run_status);
 }
 

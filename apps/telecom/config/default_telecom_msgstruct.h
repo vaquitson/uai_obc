@@ -21,12 +21,12 @@ typedef struct {
 // #### Open Tlm
 typedef struct {
   CFE_MSG_CommandHeader_t CommandHeader;
-  TELECOM_OpenTlmCmd_Payload_t Payload;
+  TELECOM_OpenTlmCmd_Payload_t payload;
 } TELECOM_OpenTlmCmd_t;
 
 typedef struct {
   CFE_MSG_TelemetryHeader_t TelemetryHeader;
-  TELECOM_OpenTlmTlm_Payload_t Payload;
+  TELECOM_OpenTlmTlm_Payload_t payload;
 } TELECOM_OpenTlmTlm_t;
 
 

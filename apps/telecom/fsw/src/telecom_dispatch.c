@@ -9,16 +9,19 @@
 void TELECOM_process_ground_cmd(const CFE_SB_Buffer_t *sb_buf_p){
   CFE_MSG_FcnCode_t fcn_code = 0;
   CFE_MSG_GetFcnCode(&sb_buf_p->Msg, &fcn_code);
-  
+  printf("fcn code %d\n", fcn_code);
+
   switch (fcn_code){
     case TELECOM_OPEN_TLM_CC:
-      
+      TELECOM_open_tlm_cmd((TELECOM_OpenTlmCmd_t *)sb_buf_p);            
       break; 
+    default:
+      printf("HELLO 6\n");
   }
 
 }
 
-void TELECOM_task_pipe(const CFE_SB_Buffer_t *sb_buf_p){
+void TELECOM_task_pipe(const CFE_SB_Buffer_t *sb_buf_p){ 
   static CFE_SB_MsgId_t CMD_MID     = CFE_SB_MSGID_RESERVED;
   static CFE_SB_MsgId_t SEND_HK_MID = CFE_SB_MSGID_RESERVED;
 

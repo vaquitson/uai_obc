@@ -3,6 +3,7 @@ project(CFE_TELECOM C)
 set(APP_SRC_FILES
     fsw/src/telecom_app.c
     fsw/src/telecom_dispatch.c
+    fsw/src/telecom_cmds.c
 )
 
 if (CFE_EDS_ENABLED)
@@ -17,7 +18,6 @@ endif(CFE_EDS_ENABLED)
 if (COMMUNICATION_LORA)
   list(APPEND APP_SRC_FILES
   fsw/src/telecom_lora_controller.c
-  fsw/src/telecom_serial.c
   fsw/src/telecom_lora_tlm.c)
 else() 
   list(APPEND APP_SRC_FILES

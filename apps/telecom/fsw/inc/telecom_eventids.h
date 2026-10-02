@@ -13,6 +13,7 @@
 #define TELECOM_MID_ERR_EID            9
 #define TELECOM_PIPE_INITILIZATION_ERR 10
 #define TELECOM_TLM_INIT_ERR           11
+#define TELECOM_CMD_RECIVED            12
 
 #endif
 

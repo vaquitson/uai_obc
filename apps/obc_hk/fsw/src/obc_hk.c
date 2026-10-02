@@ -13,6 +13,9 @@
 #include "obc_hk_dispatch.h"
 #include "obc_hk_internal_cfg.h"
 
+// temporal for quick testing
+#include "telecom_msg.h"
+
 OBC_HK_GlobalApp_t OBC_HK_data = {0};
 
 CFE_Status_t OBC_HK_pipe_init(void){
@@ -70,11 +73,28 @@ void OBC_HK_AppMain(void){
   CFE_Status_t status;
   CFE_SB_Buffer_t *sb_buf_p;
 
+  // temporal for quick testing
+  bool vooolatile = false;
+
   status = OBC_HK_Init();
   if (status != CFE_SUCCESS)
     OBC_HK_data.run_status = CFE_ES_RunStatus_APP_ERROR;
 
   while (CFE_ES_RunLoop(&OBC_HK_data.run_status) == true){
+    // temporal for quick testing
+    if (vooolatile == false){
+      TELECOM_OpenTlmCmd_t msg; 
+      CFE_MSG_Init(CFE_MSG_PTR(msg.CommandHeader),
+                   CFE_SB_ValueToMsgId(0x187A),
+                   sizeof(msg));
+
+      CFE_MSG_SetFcnCode(CFE_MSG_PTR(msg.CommandHeader), 2);
+      
+      OS_TaskDelay(2000);
+      CFE_SB_TransmitMsg(CFE_MSG_PTR(msg.CommandHeader), true);
+      vooolatile = true;
+    }
+
     status = CFE_SB_ReceiveBuffer(&sb_buf_p, 
                                   OBC_HK_data.cmd_pipe, 
                                   CFE_SB_PEND_FOREVER);

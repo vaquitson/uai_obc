@@ -30,7 +30,7 @@
 typedef struct {
   osal_id_t fd;
   int state;
-  char downlik_freq[10];
+  char downlink_freq[10];
   char uplink_freq[10];
 } LoraController;
 
