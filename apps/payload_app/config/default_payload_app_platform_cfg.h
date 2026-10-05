@@ -8,35 +8,58 @@
 /** Depth of the command pipe */
 #define PAYLOAD_APP_PIPE_DEPTH 16
 
-/** Timeout (ms) used while waiting for a command on the pipe, between HK sends */
-#define PAYLOAD_APP_SB_TIMEOUT_MS 1000
+/** Housekeeping period (ms); the main loop never blocks longer than this */
+#define PAYLOAD_APP_HK_PERIOD_MS 1000
 
-/** Max length (incl. null) of an aircraft ICAO24 hex identifier field */
-#define PAYLOAD_APP_ICAO24_LEN 8
+/** Absolute path of the Payload API Unix socket (Raspberry Pi deployment) */
+#define PAYLOAD_APP_SOCKET_PATH_DEFAULT "/run/payload/payload.sock"
 
-/** Max length (incl. null) of an aircraft callsign field */
-#define PAYLOAD_APP_CALLSIGN_LEN 16
+/** Environment variable that overrides the socket path at runtime (development) */
+#define PAYLOAD_APP_SOCKET_PATH_ENV "PAYLOAD_APP_SOCKET_PATH"
 
-/** Max length (incl. null) of the envelope "status" string ("OK"/"ERROR") */
-#define PAYLOAD_APP_STATUS_LEN 8
+/** interface_version the app was written against */
+#define PAYLOAD_APP_INTERFACE_VERSION "0.4.0"
 
 /*
-** core-cpu1 runs with its CWD set to <repo_root>/build/exe/cpu1 (see the
-** repo README build/run instructions). This mirrors how the PSP maps the
-** "/cf" virtual volume relative to that same CWD (OS_FileSysAddFixedMap
-** "./cf" in psp/fsw/pc-linux/src/cfe_psp_start.c). The socket directory
-** lives at <repo_root>/run/payload, so from that CWD it is 3 levels up.
+** Request queue between the main task and the socket worker child task.
+** Without root, POSIX message queues are capped by /proc/sys/fs/mqueue/msg_max (10).
 */
-/** Directory (relative to core-cpu1's CWD) where the Payload Unix socket lives */
-#define PAYLOAD_APP_SOCKET_DIR_REL "../../../run/payload"
+#define PAYLOAD_APP_REQ_QUEUE_DEPTH 4
 
-/** File name of the Unix domain socket exposed by the Payload process */
-#define PAYLOAD_APP_SOCKET_NAME "payload.sock"
+/** Per-request total deadline (ms) for queries */
+#define PAYLOAD_APP_QUERY_TIMEOUT_MS 5000
 
-/** Max size (bytes) accepted for a single framed JSON message body */
-#define PAYLOAD_APP_SOCK_MAX_MSG_SIZE 4096
+/** Per-request total deadline (ms) for START_ACQUISITION/STOP_ACQUISITION (systemd units) */
+#define PAYLOAD_APP_ACQ_TIMEOUT_MS 40000
 
-/** Timeout (ms) applied to each socket recv() so the AppMain loop is never blocked indefinitely */
-#define PAYLOAD_APP_SOCK_RECV_TIMEOUT_MS 200
+/** Response buffer: READ_SESSION_RANGE (4096 B as Base64) and LIST_SESSIONS with many sessions */
+#define PAYLOAD_APP_RX_BUF_SIZE 65536
+
+/** Max JSON tokens per response (jsmn) */
+#define PAYLOAD_APP_JSON_MAX_TOKENS 4096
+
+/** BUSY (status_code 4) handling: total attempts and initial backoff, doubled on each retry */
+#define PAYLOAD_APP_BUSY_MAX_ATTEMPTS 3
+#define PAYLOAD_APP_BUSY_BACKOFF_MS   1000
+
+/** connect() failure backoff: exponential between these bounds (ms) */
+#define PAYLOAD_APP_CONNECT_BACKOFF_MIN_MS 1000
+#define PAYLOAD_APP_CONNECT_BACKOFF_MAX_MS 30000
+
+/** A queued request is discarded after this long without being able to connect (startup GET_STATUS never is) */
+#define PAYLOAD_APP_CONNECT_RETRY_MAX_MS 30000
+
+/** Max raw bytes per READ_SESSION_RANGE chunk TLM packet (multiple of 8; 16+40+176 = 232 B fits LoRa) */
+#define PAYLOAD_APP_CHUNK_TLM_MAX 176
+
+/** Max aircraft packets published per GET_LIVE_STATE (lowest age_s first) */
+#define PAYLOAD_APP_LIVE_MAX_AIRCRAFT_PER_REQ 20
+
+/** Delay (ms) between packets of a TLM burst so to_lab's pipe is not overrun */
+#define PAYLOAD_APP_TLM_BURST_DELAY_MS 10
+
+/** Socket worker child task */
+#define PAYLOAD_APP_WORKER_PRIORITY 95
+#define PAYLOAD_APP_WORKER_STACK    16384
 
 #endif
