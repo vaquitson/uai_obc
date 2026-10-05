@@ -19,7 +19,7 @@
 /* One queued Payload API request; op is the command code (PAYLOAD_APP_*_CC) */
 typedef struct {
   uint8  op;
-  uint8  startup; /* startup GET_STATUS: retry connect forever, report version */
+  uint8  probe; /* service probe (startup/recovery GET_STATUS): one attempt, failures not counted, reports version */
   uint16 length;
   uint32 offset;
   char   session_id[PAYLOAD_APP_SESSION_ID_LEN];

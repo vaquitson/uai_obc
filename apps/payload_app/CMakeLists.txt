@@ -3,6 +3,7 @@ project(CFE_PAYLOAD_APP C)
 set(APP_SRC_FILES
   fsw/src/payload_app.c
   fsw/src/payload_app_worker.c
+  fsw/src/payload_app_tlm.c
   fsw/src/payload_api_client.c
   fsw/src/payload_api_json.c
   fsw/src/payload_base64.c

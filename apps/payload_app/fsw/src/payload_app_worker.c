@@ -8,6 +8,7 @@
 #include "payload_app.h"
 #include "payload_app_eventids.h"
 #include "payload_app_fcncodes.h"
+#include "payload_app_tlm.h"
 #include "payload_app_worker.h"
 
 /* Request JSON: envelope + the largest args object (READ_SESSION_RANGE) */
@@ -21,6 +22,8 @@ static jsmntok_t PAYLOAD_APP_Tokens[PAYLOAD_APP_JSON_MAX_TOKENS];
 typedef struct {
   uint32 next_request_id;
   bool   service_down;       /* last connect() failed */
+  bool   probing;            /* background GET_STATUS probes until Payload answers again */
+  bool   revalidate;         /* recovered through another command: re-check interface_version */
   int    last_connect_errno; /* errno already reported, for event throttling */
   uint32 connect_backoff_ms;
 } PAYLOAD_APP_WorkerState_t;
@@ -52,7 +55,14 @@ static void PAYLOAD_APP_SetServiceAvailable(uint8 available)
   PAYLOAD_APP_HkUnlock();
 }
 
-/* One event per outage and per errno change; the rest of the retries stay silent */
+static void PAYLOAD_APP_GrowBackoff(void)
+{
+  PAYLOAD_APP_Worker.connect_backoff_ms *= 2;
+  if (PAYLOAD_APP_Worker.connect_backoff_ms > PAYLOAD_APP_CONNECT_BACKOFF_MAX_MS)
+    PAYLOAD_APP_Worker.connect_backoff_ms = PAYLOAD_APP_CONNECT_BACKOFF_MAX_MS;
+}
+
+/* One event per outage and per errno change; the rest of the retries and probes stay silent */
 static void PAYLOAD_APP_ReportConnectFailure(PAYLOAD_API_Result_t result, int err_no)
 {
   if (!PAYLOAD_APP_Worker.service_down || err_no != PAYLOAD_APP_Worker.last_connect_errno)
@@ -71,16 +81,21 @@ static void PAYLOAD_APP_ReportConnectFailure(PAYLOAD_API_Result_t result, int er
   PAYLOAD_APP_SetServiceAvailable(0);
 }
 
-static void PAYLOAD_APP_ReportConnected(void)
+/* Returns true when this connect() ends an outage */
+static bool PAYLOAD_APP_ReportConnected(const char *op)
 {
-  if (PAYLOAD_APP_Worker.service_down)
+  bool recovered = PAYLOAD_APP_Worker.service_down || PAYLOAD_APP_Worker.probing;
+
+  if (recovered)
     CFE_EVS_SendEvent(PAYLOAD_APP_SERVICE_RECOVERED_EID, CFE_EVS_EventType_INFORMATION,
-                      "Payload service reachable again");
+                      "Payload service reachable again (%s)", op);
 
   PAYLOAD_APP_Worker.service_down       = false;
+  PAYLOAD_APP_Worker.probing            = false;
   PAYLOAD_APP_Worker.last_connect_errno = 0;
   PAYLOAD_APP_Worker.connect_backoff_ms = PAYLOAD_APP_CONNECT_BACKOFF_MIN_MS;
   PAYLOAD_APP_SetServiceAvailable(1);
+  return recovered;
 }
 
 static void PAYLOAD_APP_ReportTransportError(const char *op, uint32 rid, PAYLOAD_API_Result_t result, int err_no,
@@ -117,8 +132,8 @@ static uint8 PAYLOAD_APP_StateOrUnknown(uint32 valid, uint32 bit, uint8 value)
   return (valid & bit) ? value : PAYLOAD_APP_UNKNOWN;
 }
 
-/* Copies a GET_STATUS-style object into HK; reports the interface_version check on startup or when it changes */
-static void PAYLOAD_APP_ApplyStatus(const PAYLOAD_JSON_Doc_t *doc, int obj, bool startup)
+/* Copies a GET_STATUS-style object into HK; reports the interface_version check when asked or when it changes */
+static void PAYLOAD_APP_ApplyStatus(const PAYLOAD_JSON_Doc_t *doc, int obj, bool report_version)
 {
   PAYLOAD_JSON_Status_t        st;
   PAYLOAD_APP_HkTlm_Payload_t *hk = &PAYLOAD_APP_Global.hk_packet.payload;
@@ -152,7 +167,7 @@ static void PAYLOAD_APP_ApplyStatus(const PAYLOAD_JSON_Doc_t *doc, int obj, bool
   hk->version_ok = version_ok;
   PAYLOAD_APP_HkUnlock();
 
-  if (!startup && !changed)
+  if (!report_version && !changed)
     return;
   if (version_ok)
     CFE_EVS_SendEvent(PAYLOAD_APP_VERSION_OK_EID, CFE_EVS_EventType_INFORMATION,
@@ -164,19 +179,59 @@ static void PAYLOAD_APP_ApplyStatus(const PAYLOAD_JSON_Doc_t *doc, int obj, bool
                       PAYLOAD_APP_INTERFACE_VERSION);
 }
 
-/* Handles an OK response; returns false (after its own event) if the data could not be used */
-static bool PAYLOAD_APP_HandleOk(const PAYLOAD_APP_Request_t *req, const PAYLOAD_JSON_Doc_t *doc,
-                                 const PAYLOAD_JSON_Envelope_t *env)
+static bool PAYLOAD_APP_HandleAcquisition(const char *op, uint32 rid, const PAYLOAD_JSON_Doc_t *doc,
+                                          const PAYLOAD_JSON_Envelope_t *env)
 {
+  int status_obj = PAYLOAD_JSON_Find(doc, env->data, "status");
+
+  CFE_EVS_SendEvent(PAYLOAD_APP_ACQ_INFO_EID, CFE_EVS_EventType_INFORMATION, "%s: %s", op,
+                    env->message[0] != '\0' ? env->message : "(no message)");
+
+  if (status_obj < 0 || doc->tok[status_obj].type != JSMN_OBJECT)
+  {
+    CFE_EVS_SendEvent(PAYLOAD_APP_JSON_ERR_EID, CFE_EVS_EventType_ERROR, "%s rid=%lu: data.status is not an object",
+                      op, (unsigned long)rid);
+    return false;
+  }
+  PAYLOAD_APP_ApplyStatus(doc, status_obj, false);
+  return true;
+}
+
+/* Handles an OK response; returns false (after its own event) if the data could not be used */
+static bool PAYLOAD_APP_HandleOk(const PAYLOAD_APP_Request_t *req, uint32 rid, const PAYLOAD_JSON_Doc_t *doc,
+                                 const PAYLOAD_JSON_Envelope_t *env, bool recovered)
+{
+  const char *op = PAYLOAD_APP_OpName(req->op);
+
+  /* After an outage interface_version is re-checked like at startup; other ops schedule a GET_STATUS for it */
+  if (recovered && req->op != PAYLOAD_APP_GET_STATUS_CC)
+    PAYLOAD_APP_Worker.revalidate = true;
+
   switch (req->op)
   {
     case PAYLOAD_APP_GET_STATUS_CC:
-      PAYLOAD_APP_ApplyStatus(doc, env->data, req->startup != 0);
+      PAYLOAD_APP_ApplyStatus(doc, env->data, req->probe != 0 || recovered);
       return true;
+
+    case PAYLOAD_APP_START_ACQUISITION_CC:
+    case PAYLOAD_APP_STOP_ACQUISITION_CC:
+      return PAYLOAD_APP_HandleAcquisition(op, rid, doc, env);
+
+    case PAYLOAD_APP_GET_LIVE_STATE_CC:
+      return PAYLOAD_APP_TlmLive(doc, env->data, rid);
+
+    case PAYLOAD_APP_LIST_SESSIONS_CC:
+      return PAYLOAD_APP_TlmSessionList(doc, env->data, rid);
+
+    case PAYLOAD_APP_GET_SESSION_INFO_CC:
+      return PAYLOAD_APP_TlmSessionInfo(doc, env->data, rid, req->session_id);
+
+    case PAYLOAD_APP_READ_SESSION_RANGE_CC:
+      return PAYLOAD_APP_TlmChunks(doc, env->data, rid, req->session_id, req->offset);
 
     default:
       CFE_EVS_SendEvent(PAYLOAD_APP_NOT_IMPLEMENTED_EID, CFE_EVS_EventType_ERROR, "%s response handling not implemented",
-                        PAYLOAD_APP_OpName(req->op));
+                        op);
       return false;
   }
 }
@@ -194,10 +249,28 @@ static const char *PAYLOAD_APP_JsonResultText(PAYLOAD_JSON_Result_t result)
   }
 }
 
+/* session_id was validated by the main task (YYYYMMDDTHHMMSSZ), so it needs no JSON escaping */
+static void PAYLOAD_APP_BuildArgs(const PAYLOAD_APP_Request_t *req, char *buf, size_t size)
+{
+  switch (req->op)
+  {
+    case PAYLOAD_APP_GET_SESSION_INFO_CC:
+      snprintf(buf, size, "{\"session_id\":\"%s\"}", req->session_id);
+      break;
+    case PAYLOAD_APP_READ_SESSION_RANGE_CC:
+      snprintf(buf, size, "{\"session_id\":\"%s\",\"offset\":%lu,\"length\":%u}", req->session_id,
+               (unsigned long)req->offset, (unsigned int)req->length);
+      break;
+    default:
+      snprintf(buf, size, "{}");
+      break;
+  }
+}
+
 static void PAYLOAD_APP_Execute(const PAYLOAD_APP_Request_t *req)
 {
-  const char             *op         = PAYLOAD_APP_OpName(req->op);
-  uint32                  timeout_ms = PAYLOAD_APP_QUERY_TIMEOUT_MS;
+  const char             *op                = PAYLOAD_APP_OpName(req->op);
+  uint32                  timeout_ms        = PAYLOAD_APP_QUERY_TIMEOUT_MS;
   uint64_t                unreachable_since = 0;
   uint32                  busy_attempt      = 1;
   uint32                  busy_backoff_ms   = PAYLOAD_APP_BUSY_BACKOFF_MS;
@@ -206,6 +279,8 @@ static void PAYLOAD_APP_Execute(const PAYLOAD_APP_Request_t *req)
   int                     req_len;
   size_t                  resp_len;
   int                     err_no;
+  bool                    recovered;
+  char                    args[96];
   char                    header[PAYLOAD_API_MAX_HEADER + 1];
   char                    why[64];
   PAYLOAD_API_Result_t    result;
@@ -221,11 +296,12 @@ static void PAYLOAD_APP_Execute(const PAYLOAD_APP_Request_t *req)
   }
   if (req->op == PAYLOAD_APP_START_ACQUISITION_CC || req->op == PAYLOAD_APP_STOP_ACQUISITION_CC)
     timeout_ms = PAYLOAD_APP_ACQ_TIMEOUT_MS;
+  PAYLOAD_APP_BuildArgs(req, args, sizeof(args));
 
   for (;;)
   {
     rid     = PAYLOAD_APP_Worker.next_request_id++;
-    req_len = PAYLOAD_JSON_BuildRequest(PAYLOAD_APP_TxBuf, sizeof(PAYLOAD_APP_TxBuf), rid, op, "{}");
+    req_len = PAYLOAD_JSON_BuildRequest(PAYLOAD_APP_TxBuf, sizeof(PAYLOAD_APP_TxBuf), rid, op, args);
     if (req_len < 0)
     {
       CFE_EVS_SendEvent(PAYLOAD_APP_WORKER_ERR_EID, CFE_EVS_EventType_ERROR, "%s: request does not fit %u B", op,
@@ -244,30 +320,37 @@ static void PAYLOAD_APP_Execute(const PAYLOAD_APP_Request_t *req)
 
     if (PAYLOAD_API_IsConnectError(result))
     {
+      PAYLOAD_APP_ReportConnectFailure(result, err_no);
+
+      /* Probes make a single attempt and are not counted; the worker loop schedules the next one */
+      if (req->probe)
+      {
+        PAYLOAD_APP_Worker.probing = true;
+        PAYLOAD_APP_GrowBackoff();
+        return;
+      }
+
       now = PAYLOAD_API_NowMs();
       if (unreachable_since == 0)
         unreachable_since = now;
-      PAYLOAD_APP_ReportConnectFailure(result, err_no);
-
-      if (!req->startup &&
-          now - unreachable_since + PAYLOAD_APP_Worker.connect_backoff_ms > PAYLOAD_APP_CONNECT_RETRY_MAX_MS)
+      if (now - unreachable_since + PAYLOAD_APP_Worker.connect_backoff_ms > PAYLOAD_APP_CONNECT_RETRY_MAX_MS)
       {
+        /* Never resent automatically (START/STOP above all): the operator decides */
         CFE_EVS_SendEvent(PAYLOAD_APP_WORKER_ERR_EID, CFE_EVS_EventType_ERROR,
-                          "%s discarded: Payload unreachable for %lu ms (%s)", op,
+                          "%s discarded: Payload unreachable for %lu ms (%s), not resent", op,
                           (unsigned long)(now - unreachable_since), PAYLOAD_API_ResultName(result));
         PAYLOAD_APP_ReqErr(PAYLOAD_API_STATUS_OK);
+        PAYLOAD_APP_Worker.probing = true;
         return;
       }
 
       OS_TaskDelay(PAYLOAD_APP_Worker.connect_backoff_ms);
-      PAYLOAD_APP_Worker.connect_backoff_ms *= 2;
-      if (PAYLOAD_APP_Worker.connect_backoff_ms > PAYLOAD_APP_CONNECT_BACKOFF_MAX_MS)
-        PAYLOAD_APP_Worker.connect_backoff_ms = PAYLOAD_APP_CONNECT_BACKOFF_MAX_MS;
+      PAYLOAD_APP_GrowBackoff();
       continue;
     }
 
     /* Anything past connect() means the service is up, even if this exchange then fails */
-    PAYLOAD_APP_ReportConnected();
+    recovered = PAYLOAD_APP_ReportConnected(op);
 
     if (result != PAYLOAD_API_OK)
     {
@@ -329,12 +412,23 @@ static void PAYLOAD_APP_Execute(const PAYLOAD_APP_Request_t *req)
       return;
     }
 
-    if (PAYLOAD_APP_HandleOk(req, &doc, &env))
+    if (PAYLOAD_APP_HandleOk(req, rid, &doc, &env, recovered))
       PAYLOAD_APP_ReqOk();
     else
       PAYLOAD_APP_ReqErr(PAYLOAD_API_STATUS_OK);
     return;
   }
+}
+
+/* Startup/recovery GET_STATUS: single attempt, reports interface_version */
+static void PAYLOAD_APP_Probe(void)
+{
+  PAYLOAD_APP_Request_t req;
+
+  memset(&req, 0, sizeof(req));
+  req.op    = PAYLOAD_APP_GET_STATUS_CC;
+  req.probe = 1;
+  PAYLOAD_APP_Execute(&req);
 }
 
 void PAYLOAD_APP_WorkerMain(void)
@@ -349,13 +443,27 @@ void PAYLOAD_APP_WorkerMain(void)
 
   for (;;)
   {
+    if (PAYLOAD_APP_Worker.revalidate && !PAYLOAD_APP_Worker.probing)
+    {
+      PAYLOAD_APP_Worker.revalidate = false;
+      PAYLOAD_APP_Probe();
+      continue;
+    }
+
+    /* While probing, the backoff wait is a queue wait: an operator command is served immediately */
     copied = 0;
-    status = OS_QueueGet(PAYLOAD_APP_Global.req_queue, &req, sizeof(req), &copied, 1000);
+    status = OS_QueueGet(PAYLOAD_APP_Global.req_queue, &req, sizeof(req), &copied,
+                         PAYLOAD_APP_Worker.probing ? (int32)PAYLOAD_APP_Worker.connect_backoff_ms : 1000);
     if (status == OS_SUCCESS && copied == sizeof(req))
     {
       PAYLOAD_APP_Execute(&req);
     }
-    else if (status != OS_QUEUE_TIMEOUT)
+    else if (status == OS_QUEUE_TIMEOUT)
+    {
+      if (PAYLOAD_APP_Worker.probing)
+        PAYLOAD_APP_Probe();
+    }
+    else
     {
       CFE_EVS_SendEvent(PAYLOAD_APP_WORKER_ERR_EID, CFE_EVS_EventType_ERROR,
                         "Request queue read failed, RC = %ld, size = %lu", (long)status, (unsigned long)copied);

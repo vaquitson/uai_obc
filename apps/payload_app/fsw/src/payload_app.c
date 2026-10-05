@@ -5,10 +5,12 @@
 #include "cfe.h"
 
 #include "payload_api_client.h"
+#include "payload_api_json.h"
 #include "payload_app_eventids.h"
 #include "payload_app_fcncodes.h"
 #include "payload_app_msg.h"
 #include "payload_app_msgdefs.h"
+#include "payload_app_tlm.h"
 #include "payload_app_worker.h"
 #include "payload_app.h"
 
@@ -17,6 +19,18 @@
 PAYLOAD_APP_SIZE_CHECK(PAYLOAD_APP_HkPayloadSize_t, sizeof(PAYLOAD_APP_HkTlm_Payload_t) == 64);
 PAYLOAD_APP_SIZE_CHECK(PAYLOAD_APP_SessionInfoCmdSize_t, sizeof(PAYLOAD_APP_SessionInfoCmd_Payload_t) == 20);
 PAYLOAD_APP_SIZE_CHECK(PAYLOAD_APP_ReadRangeCmdSize_t, sizeof(PAYLOAD_APP_ReadRangeCmd_Payload_t) == 28);
+PAYLOAD_APP_SIZE_CHECK(PAYLOAD_APP_LivePayloadSize_t, sizeof(PAYLOAD_APP_LiveTlm_Payload_t) == 80);
+PAYLOAD_APP_SIZE_CHECK(PAYLOAD_APP_SessionPayloadSize_t, sizeof(PAYLOAD_APP_SessionTlm_Payload_t) == 80);
+PAYLOAD_APP_SIZE_CHECK(PAYLOAD_APP_ChunkPayloadSize_t,
+                       sizeof(PAYLOAD_APP_ChunkTlm_Payload_t) == 40 + PAYLOAD_APP_CHUNK_TLM_MAX);
+
+#if PAYLOAD_APP_CHUNK_TLM_MAX % 8 != 0 || PAYLOAD_APP_CHUNK_TLM_MAX > 0xFFFF
+#error "PAYLOAD_APP_CHUNK_TLM_MAX must be a multiple of 8 (no implicit padding) and fit n_bytes"
+#endif
+
+/* READ_SESSION_RANGE length bounds from the API contract */
+#define PAYLOAD_APP_READ_LENGTH_MIN 1
+#define PAYLOAD_APP_READ_LENGTH_MAX 4096
 
 PAYLOAD_APP_GlobalApp_t PAYLOAD_APP_Global;
 
@@ -140,6 +154,7 @@ CFE_Status_t PAYLOAD_APP_Init(void)
     CFE_EVS_SendEvent(PAYLOAD_APP_INIT_FAILURE_EID, CFE_EVS_EventType_ERROR,
                        "PAYLOAD_APP: Error initializing HK msg, RC = 0x%08lX", (unsigned long)status);
   PAYLOAD_APP_InitHk();
+  PAYLOAD_APP_TlmInit();
 
   PAYLOAD_APP_InitSocketPath();
 
@@ -186,10 +201,10 @@ CFE_Status_t PAYLOAD_APP_Init(void)
     return status;
   }
 
-  /* Startup GET_STATUS: checks interface_version and fills HK; retries until Payload answers */
+  /* Startup GET_STATUS: checks interface_version and fills HK; probed in the background until Payload answers */
   memset(&startup_req, 0, sizeof(startup_req));
-  startup_req.op      = PAYLOAD_APP_GET_STATUS_CC;
-  startup_req.startup = 1;
+  startup_req.op    = PAYLOAD_APP_GET_STATUS_CC;
+  startup_req.probe = 1;
   PAYLOAD_APP_Enqueue(&startup_req);
 
   CFE_EVS_SendEvent(PAYLOAD_APP_INIT_SUCCESSFUL_EID, CFE_EVS_EventType_INFORMATION,
@@ -303,11 +318,65 @@ static void PAYLOAD_APP_QueueOp(uint8 op)
   PAYLOAD_APP_CountCmd(PAYLOAD_APP_Enqueue(&req));
 }
 
-static void PAYLOAD_APP_NotImplemented(uint8 op)
+/* Copies a command session_id; it must be NUL-terminated and look like YYYYMMDDTHHMMSSZ */
+static bool PAYLOAD_APP_ValidSessionId(uint8 op, const char *raw, char *out)
 {
-  CFE_EVS_SendEvent(PAYLOAD_APP_NOT_IMPLEMENTED_EID, CFE_EVS_EventType_ERROR, "%s not implemented yet",
-                    PAYLOAD_APP_OpName(op));
-  PAYLOAD_APP_CountCmd(false);
+  char shown[PAYLOAD_APP_SESSION_ID_LEN];
+  int  i;
+
+  if (memchr(raw, '\0', PAYLOAD_APP_SESSION_ID_LEN) != NULL && PAYLOAD_JSON_IsValidSessionId(raw))
+  {
+    memcpy(out, raw, PAYLOAD_APP_SESSION_ID_LEN);
+    return true;
+  }
+
+  for (i = 0; i < PAYLOAD_APP_SESSION_ID_LEN - 1 && raw[i] != '\0'; i++)
+    shown[i] = (raw[i] >= 0x20 && raw[i] < 0x7F) ? raw[i] : '?';
+  shown[i] = '\0';
+  CFE_EVS_SendEvent(PAYLOAD_APP_VALIDATION_ERR_EID, CFE_EVS_EventType_ERROR,
+                    "%s rejected: session_id '%s' is not YYYYMMDDTHHMMSSZ", PAYLOAD_APP_OpName(op), shown);
+  return false;
+}
+
+static void PAYLOAD_APP_QueueSessionInfo(const CFE_SB_Buffer_t *sb_buf_ptr)
+{
+  const PAYLOAD_APP_SessionInfoCmd_t *cmd = (const PAYLOAD_APP_SessionInfoCmd_t *)sb_buf_ptr;
+  PAYLOAD_APP_Request_t               req;
+
+  memset(&req, 0, sizeof(req));
+  req.op = PAYLOAD_APP_GET_SESSION_INFO_CC;
+  if (!PAYLOAD_APP_ValidSessionId(req.op, cmd->payload.session_id, req.session_id))
+  {
+    PAYLOAD_APP_CountCmd(false);
+    return;
+  }
+  PAYLOAD_APP_CountCmd(PAYLOAD_APP_Enqueue(&req));
+}
+
+static void PAYLOAD_APP_QueueReadRange(const CFE_SB_Buffer_t *sb_buf_ptr)
+{
+  const PAYLOAD_APP_ReadRangeCmd_t *cmd = (const PAYLOAD_APP_ReadRangeCmd_t *)sb_buf_ptr;
+  PAYLOAD_APP_Request_t             req;
+
+  memset(&req, 0, sizeof(req));
+  req.op = PAYLOAD_APP_READ_SESSION_RANGE_CC;
+  if (!PAYLOAD_APP_ValidSessionId(req.op, cmd->payload.session_id, req.session_id))
+  {
+    PAYLOAD_APP_CountCmd(false);
+    return;
+  }
+  /* offset is a uint32, so offset >= 0 always holds */
+  if (cmd->payload.length < PAYLOAD_APP_READ_LENGTH_MIN || cmd->payload.length > PAYLOAD_APP_READ_LENGTH_MAX)
+  {
+    CFE_EVS_SendEvent(PAYLOAD_APP_VALIDATION_ERR_EID, CFE_EVS_EventType_ERROR,
+                      "READ_SESSION_RANGE rejected: length %u outside %u..%u", (unsigned int)cmd->payload.length,
+                      PAYLOAD_APP_READ_LENGTH_MIN, PAYLOAD_APP_READ_LENGTH_MAX);
+    PAYLOAD_APP_CountCmd(false);
+    return;
+  }
+  req.offset = cmd->payload.offset;
+  req.length = cmd->payload.length;
+  PAYLOAD_APP_CountCmd(PAYLOAD_APP_Enqueue(&req));
 }
 
 void PAYLOAD_APP_ProcessGroundCommand(const CFE_SB_Buffer_t *sb_buf_ptr)
@@ -329,26 +398,22 @@ void PAYLOAD_APP_ProcessGroundCommand(const CFE_SB_Buffer_t *sb_buf_ptr)
       break;
 
     case PAYLOAD_APP_GET_STATUS_CC:
-      if (PAYLOAD_APP_VerifyLength(sb_buf_ptr, sizeof(PAYLOAD_APP_NoArgsCmd_t)))
-        PAYLOAD_APP_QueueOp((uint8)fcn_code);
-      break;
-
     case PAYLOAD_APP_START_ACQUISITION_CC:
     case PAYLOAD_APP_STOP_ACQUISITION_CC:
     case PAYLOAD_APP_GET_LIVE_STATE_CC:
     case PAYLOAD_APP_LIST_SESSIONS_CC:
       if (PAYLOAD_APP_VerifyLength(sb_buf_ptr, sizeof(PAYLOAD_APP_NoArgsCmd_t)))
-        PAYLOAD_APP_NotImplemented((uint8)fcn_code);
+        PAYLOAD_APP_QueueOp((uint8)fcn_code);
       break;
 
     case PAYLOAD_APP_GET_SESSION_INFO_CC:
       if (PAYLOAD_APP_VerifyLength(sb_buf_ptr, sizeof(PAYLOAD_APP_SessionInfoCmd_t)))
-        PAYLOAD_APP_NotImplemented((uint8)fcn_code);
+        PAYLOAD_APP_QueueSessionInfo(sb_buf_ptr);
       break;
 
     case PAYLOAD_APP_READ_SESSION_RANGE_CC:
       if (PAYLOAD_APP_VerifyLength(sb_buf_ptr, sizeof(PAYLOAD_APP_ReadRangeCmd_t)))
-        PAYLOAD_APP_NotImplemented((uint8)fcn_code);
+        PAYLOAD_APP_QueueReadRange(sb_buf_ptr);
       break;
 
     default:
