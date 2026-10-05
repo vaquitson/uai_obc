@@ -23,7 +23,6 @@ typedef struct {
   char cmd_pipe_name[CMD_HAND_CMD_PIPE_NAME_MAX];
   CFE_SB_PipeId_t cmd_pipe;
 
-
   osal_id_t       tc_sock_id;
   OS_SockAddr_t   sock_addr;
 

@@ -4,6 +4,7 @@
 #include "cfe_msg.h"
 #include "telecom_msgdefs.h"
 
+// #### Send House Keeping
 typedef struct {
   CFE_MSG_CommandHeader_t CommandHeader;
 } TELECOM_SendHkCmd_t;
@@ -13,6 +14,8 @@ typedef struct {
   TELECOM_HkTlm_Payload_t   payload;
 } TELECOM_HkTlm_t;
 
+
+// #### Noop Cmd
 typedef struct { 
   CFE_MSG_CommandHeader_t CommandHeader;
 } TELECOM_NoopCmd_t;

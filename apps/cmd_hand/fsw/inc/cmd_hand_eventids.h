@@ -9,5 +9,6 @@
 #define CMD_HAND_INGEST_BUF_ALLOC_ERR      5
 #define CMD_HAND_INGEST_LENGTH_ERR_EID     6
 #define CMD_HAND_INGEST_SEND_ERR_EID       7
+#define CMD_HAND_SUBSCRIPTION_ERR_EID      8
 
 #endif

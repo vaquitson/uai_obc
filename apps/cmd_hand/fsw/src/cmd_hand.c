@@ -7,7 +7,7 @@
 #include "cfe_sb.h"
 #include "cmd_hand.h"
 
-#include "cmd_hand_msgids.h"
+#include "cmd_hand_msg.h"
 #include "cmd_hand_eventids.h"
 #include "cfe_psp.h"
 #include "osapi-sockets.h"
@@ -16,6 +16,11 @@
 #include "cmd_hand_decode.h"
 
 
+uint32 CMD_SUBSCRIPTION_ARR[] = {
+  CMD_HAND_SEND_HK_MID,
+  CMD_HAND_CMD_MID
+};
+
 CMD_HAND_GlobalData_t CMD_HAND_data;
 
 
@@ -23,26 +28,26 @@ CMD_HAND_GlobalData_t CMD_HAND_data;
   * This function set up the sb pipe service 
   * for the applicaciotn.
 */
-CFE_Status_t CMD_HAND_pipe_set_up(void){
-CFE_Status_t status;
-
+CFE_Status_t CMD_HAND_pipe_init(void){
+  CFE_Status_t status;
+  
+  strncpy(CMD_HAND_data.cmd_pipe_name, CMD_HAND_CMD_PIPE_NAME ,CMD_HAND_CMD_PIPE_NAME_MAX);
   status = CFE_SB_CreatePipe(&CMD_HAND_data.cmd_pipe, 
                              CMD_HAND_PLAFORM_PIPE_DEPTH,
-                             "CMD_HAND_PIPE");
+                             CMD_HAND_data.cmd_pipe_name);
 
   if (status == CFE_SUCCESS){
-    status = CFE_SB_Subscribe(CFE_SB_ValueToMsgId(CMD_HAND_CMD_MID), CMD_HAND_data.cmd_pipe);
-    if (status != CFE_SUCCESS){
-      CFE_EVS_SendEvent(CMD_HAND_SUBSCRIPTION_CMD_ERR_EID, 
-                        CFE_EVS_EventType_ERROR,
-                        "Error subscribing to SB Commands, RC = 0x%08X, LINE = %d", 
-                        (unsigned int)status,
-                        __LINE__);
+    for (int i = 0; i < sizeof(CMD_SUBSCRIPTION_ARR)/sizeof(uint32); i++){
+      status = CFE_SB_Subscribe(CFE_SB_ValueToMsgId(CMD_SUBSCRIPTION_ARR[i]), CMD_HAND_data.cmd_pipe);
+      if (status != CFE_SUCCESS){
+        CFE_EVS_SendEvent(CMD_HAND_SUBSCRIPTION_ERR_EID, CFE_EVS_EventType_ERROR,
+                          "CMD HAND: Faild to subscribe to %d,  RC = 0x%08lX",CMD_SUBSCRIPTION_ARR[i], (unsigned long)status);
+      }
     }
   } else {
     CFE_EVS_SendEvent(CMD_HAND_PIPE_CREATION_ERR_EID, 
                       CFE_EVS_EventType_ERROR,
-                      "Error creating SB Commands pipe, RC = 0x%08X, LINE = %d", 
+                      "CMD HAND: Error creating SB Commands pipe, RC = 0x%08X, LINE = %d", 
                       (unsigned int)status,
                       __LINE__);
   }
@@ -171,7 +176,7 @@ CFE_Status_t CMD_HAND_init(void){
   }
   
   // Should wee shout down execuction on a pipe error ???
-  status = CMD_HAND_pipe_set_up();
+  status = CMD_HAND_pipe_init();
 
   status = CMD_HAND_listening_sock_set_up();
   if (status == CFE_SUCCESS){
