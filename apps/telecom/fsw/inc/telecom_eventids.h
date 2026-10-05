@@ -14,6 +14,7 @@
 #define TELECOM_PIPE_INITILIZATION_ERR 10
 #define TELECOM_TLM_INIT_ERR           11
 #define TELECOM_CMD_RECIVED            12
+#define TELECOM_FC_CODE_UNRECOGNIZED   13
 
 #endif
 

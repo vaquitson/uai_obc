@@ -5,7 +5,7 @@
 #include "telecom_msgdefs.h"
 
 typedef struct {
-  CFE_MSG_CommandHeader_t CommandHeaded;
+  CFE_MSG_CommandHeader_t CommandHeader;
 } TELECOM_SendHkCmd_t;
 
 typedef struct {

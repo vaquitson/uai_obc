@@ -9,16 +9,15 @@
 void TELECOM_process_ground_cmd(const CFE_SB_Buffer_t *sb_buf_p){
   CFE_MSG_FcnCode_t fcn_code = 0;
   CFE_MSG_GetFcnCode(&sb_buf_p->Msg, &fcn_code);
-  printf("fcn code %d\n", fcn_code);
 
   switch (fcn_code){
     case TELECOM_OPEN_TLM_CC:
       TELECOM_open_tlm_cmd((TELECOM_OpenTlmCmd_t *)sb_buf_p);            
       break; 
     default:
-      printf("HELLO 6\n");
+      CFE_EVS_SendEvent(TELECOM_FC_CODE_UNRECOGNIZED, CFE_EVS_EventType_ERROR, "TELECOM: Invalid Comand Code Rcvd %d",
+                        fcn_code);
   }
-
 }
 
 void TELECOM_task_pipe(const CFE_SB_Buffer_t *sb_buf_p){ 
@@ -41,7 +40,6 @@ void TELECOM_task_pipe(const CFE_SB_Buffer_t *sb_buf_p){
     TELECOM_process_ground_cmd(sb_buf_p);
 
   } else {
-    // unrecognized event id
     CFE_EVS_SendEvent(TELECOM_MID_ERR_EID, CFE_EVS_EventType_ERROR, "L%d TO: Invalid Msg ID Rcvd 0x%x", __LINE__,
                       (unsigned int)CFE_SB_MsgIdToValue(msg_id));
   }

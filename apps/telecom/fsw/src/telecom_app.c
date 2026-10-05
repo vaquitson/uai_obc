@@ -25,6 +25,12 @@ uint32 TLM_SUBSCRIPTION_ARR[] = {
   OBC_HK_RAM_USAGE_MID,
   OBC_HK_CPU_USAGE_MID,
   TELECOM_OPEN_TLM_MID,
+  TELECOM_HK_TLM_MID
+};
+
+uint32 CMD_SUBSCRIPTION_ARR[] = {
+  TELECOM_CMD_MID,
+  TELECOM_SEND_HK_MID
 };
 
 TELECOM_GlobalApp_t TELECOM_data;
@@ -43,7 +49,7 @@ CFE_Status_t TELECOM_init_pipes(void){
     status = CFE_SB_Subscribe(CFE_SB_ValueToMsgId(TLM_SUBSCRIPTION_ARR[i]), TELECOM_data.tlm_pipe);
     if (status != CFE_SUCCESS){
       CFE_EVS_SendEvent(TELECOM_SUBSCRIPTION_ERR_EID, CFE_EVS_EventType_ERROR,
-                        "TELECOM: Faild to subscribe to OBC HK,  RC = 0x%08lX", (unsigned long)status);
+                        "TELECOM: Faild to subscribe to %d,  RC = 0x%08lX",TLM_SUBSCRIPTION_ARR[i], (unsigned long)status);
     }
   }
 
@@ -52,17 +58,20 @@ CFE_Status_t TELECOM_init_pipes(void){
   if (status != CFE_SUCCESS)
     CFE_EVS_SendEvent(TELECOM_PIPE_CREATION_ERR_EID, CFE_EVS_EventType_ERROR,
                       "TELECOM: Faild to properly crate the cmd pipe,  RC = 0x%08lX", (unsigned long)status);
- 
-  status = CFE_SB_Subscribe(CFE_SB_ValueToMsgId(TELECOM_CMD_MID), TELECOM_data.cmd_pipe);
-  if (status != CFE_SUCCESS)
-    CFE_EVS_SendEvent(TELECOM_SUBSCRIPTION_ERR_EID, CFE_EVS_EventType_ERROR,
-                      "TELECOM: Faild to subscribe to TELECOM CMD MID,  RC = 0x%08lX", (unsigned long)status);
+
+ for (int i = 0; i < sizeof(CMD_SUBSCRIPTION_ARR)/sizeof(uint32); i++){
+    status = CFE_SB_Subscribe(CFE_SB_ValueToMsgId(CMD_SUBSCRIPTION_ARR[i]), TELECOM_data.cmd_pipe);
+    if (status != CFE_SUCCESS){
+      CFE_EVS_SendEvent(TELECOM_SUBSCRIPTION_ERR_EID, CFE_EVS_EventType_ERROR,
+                        "TELECOM: Faild to subscribe to %d,  RC = 0x%08lX", CMD_SUBSCRIPTION_ARR[i], (unsigned long)status);
+    }
+  }
 
   return status;
 }
 
 
-CFE_Status_t TELECOM_APP_Init(void){ 
+CFE_Status_t TELECOM_APP_init(void){ 
   CFE_Status_t status;
 
   memset(&TELECOM_data, 0, sizeof(TELECOM_data));
@@ -102,14 +111,15 @@ void TELECOM_process_cmd(void){
     if (status != CFE_SUCCESS){
       break;
     }
-
+    
+    TELECOM_data.cmd_counter++;
     TELECOM_task_pipe(sb_buf_p);
   }
 }
 
 
 void TELECOM_AppMain(void){
-  if (TELECOM_APP_Init() != CFE_SUCCESS){
+  if (TELECOM_APP_init() != CFE_SUCCESS){
     TELECOM_data.run_status = CFE_ES_RunStatus_APP_ERROR;     
   }
 

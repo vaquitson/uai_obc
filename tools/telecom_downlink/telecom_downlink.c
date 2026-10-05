@@ -75,7 +75,7 @@ int main(int argc, char **argv)
 {
   int port = 2234;
   int timeout = 10;
-  int count = 1;
+  int count = 3;
   int received = 0;
   int fd;
   int result = 0;

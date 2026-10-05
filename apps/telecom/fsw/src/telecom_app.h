@@ -7,15 +7,13 @@
 #include "common_types.h"
 
 void  SAMPLE_APP_Main(void);
-int   TELECOM_APP_Init(void);
+int   TELECOM_APP_init(void);
 
 #define TELECOM_TLM_PIPE_NAME "TELECOM_TLM_PIPE"
 #define TELECOM_TLM_PIPE_NAME_MAX 17
 
 #define TELECOM_CMD_PIPE_NAME "TELECOM_CMD_PIPE"
 #define TELECOM_CMD_PIPE_NAME_MAX 17
-
-
 
 typedef uint32 TELECOM_Err_t;
 
@@ -39,8 +37,6 @@ typedef struct {
 
   uint32          run_status;
   bool            downlink_on;
-  bool            suppress_sendto;
-
 } TELECOM_GlobalApp_t;
 
 #else
@@ -60,11 +56,10 @@ typedef struct {
 
   uint8 cmd_counter;
   uint8 err_counter;
+  uint8 send_counter;
 
   uint32          run_status;
   bool            downlink_on;
-  bool            suppress_sendto;
-
 } TELECOM_GlobalApp_t;
 
 #endif 

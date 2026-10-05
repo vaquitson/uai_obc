@@ -63,7 +63,6 @@ void TELECOM_forward_tlm(void){
 
 
     if (cfe_status == CFE_SUCCESS){
-      printf("Hello 3\n");
       os_status = OS_SUCCESS;
 
       if (TELECOM_data.downlink_on == true) {
@@ -84,7 +83,6 @@ void TELECOM_forward_tlm(void){
           if (os_status < 0){
             CFE_EVS_SendEvent(TELECOM_SENDING_ERR_EID, CFE_EVS_EventType_ERROR,
                               "L%d TO sendto error %d. Tlm output error\n", __LINE__, (int)os_status);
-            TELECOM_data.suppress_sendto = true;
           }
         }
       }

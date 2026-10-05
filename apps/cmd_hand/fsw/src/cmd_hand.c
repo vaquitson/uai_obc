@@ -124,10 +124,10 @@ void CMD_HAND_read_up_link(void){
                                          read_size, 
                                          &sb_buf_p);
       if (status != CFE_SUCCESS){
-        CMD_HAND_data.ingest_errors++;
+        CMD_HAND_data.err_counter++;
 
       } else {
-        CMD_HAND_data.ingest_packets++;
+        CMD_HAND_data.cmd_counter++;
         status = CFE_SB_TransmitBuffer(sb_buf_p, false);
       }
 
@@ -160,8 +160,8 @@ CFE_Status_t CMD_HAND_init(void){
 
   CMD_HAND_data.run_status = CFE_ES_RunStatus_APP_RUN;  
   CMD_HAND_data.sock_listening = false;
-  CMD_HAND_data.ingest_packets = 0;
-  CMD_HAND_data.ingest_errors = 0;
+  CMD_HAND_data.cmd_counter = 0;
+  CMD_HAND_data.err_counter = 0;
 
   status = CFE_EVS_Register(NULL, 0, CFE_EVS_EventFilter_BINARY);
   if (status != CFE_SUCCESS) {

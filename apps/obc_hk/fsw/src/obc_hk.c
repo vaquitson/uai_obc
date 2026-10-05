@@ -81,19 +81,28 @@ void OBC_HK_AppMain(void){
     OBC_HK_data.run_status = CFE_ES_RunStatus_APP_ERROR;
 
   while (CFE_ES_RunLoop(&OBC_HK_data.run_status) == true){
+
     // temporal for quick testing
     if (vooolatile == false){
-      TELECOM_OpenTlmCmd_t msg; 
-      CFE_MSG_Init(CFE_MSG_PTR(msg.CommandHeader),
+      TELECOM_OpenTlmCmd_t msg_open_tlm; 
+      TELECOM_SendHkCmd_t msg_hk; 
+      CFE_MSG_Init(CFE_MSG_PTR(msg_open_tlm.CommandHeader),
                    CFE_SB_ValueToMsgId(0x187A),
-                   sizeof(msg));
+                   sizeof(msg_open_tlm));
 
-      CFE_MSG_SetFcnCode(CFE_MSG_PTR(msg.CommandHeader), 2);
-      strcpy(msg.payload.dest_IP, "127.0.0.1");
-      strcpy(msg.payload.dest_port, "2234");  
+      CFE_MSG_Init(CFE_MSG_PTR(msg_hk.CommandHeader),
+                   CFE_SB_ValueToMsgId(123),
+                   sizeof(msg_hk));
+
+      CFE_MSG_SetFcnCode(CFE_MSG_PTR(msg_open_tlm.CommandHeader), 2);
+      strcpy(msg_open_tlm.payload.dest_IP, "127.0.0.1");
+      strcpy(msg_open_tlm.payload.dest_port, "2234");  
 
       OS_TaskDelay(2000);
-      CFE_SB_TransmitMsg(CFE_MSG_PTR(msg.CommandHeader), true);
+      CFE_SB_TransmitMsg(CFE_MSG_PTR(msg_open_tlm.CommandHeader), true);
+
+      OS_TaskDelay(1000);
+      CFE_SB_TransmitMsg(CFE_MSG_PTR(msg_hk.CommandHeader), true);
       vooolatile = true;
     }
 
