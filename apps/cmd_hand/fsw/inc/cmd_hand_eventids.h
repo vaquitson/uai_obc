@@ -10,5 +10,6 @@
 #define CMD_HAND_INGEST_LENGTH_ERR_EID     6
 #define CMD_HAND_INGEST_SEND_ERR_EID       7
 #define CMD_HAND_SUBSCRIPTION_ERR_EID      8
+#define CMD_HAND_PIPE_INIT_ERR_EID         9
 
 #endif

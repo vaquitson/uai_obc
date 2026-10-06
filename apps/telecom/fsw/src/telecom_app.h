@@ -53,10 +53,12 @@ typedef struct {
   char            tlm_dest_ip[17];
   char            tlm_port[10];
   osal_id_t       tlm_sock_id;
+  osal_id_t       cmd_sock_id;
 
   uint8 cmd_counter;
   uint8 err_counter;
-  uint8 send_counter;
+  uint8 cmd_ingest_counter;
+  uint8 tlm_paquet_counter;
 
   uint32          run_status;
   bool            downlink_on;

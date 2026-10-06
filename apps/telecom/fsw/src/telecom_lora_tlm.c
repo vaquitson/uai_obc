@@ -77,3 +77,16 @@ void TELECOM_forward_tlm(void){
     pkt_count++; 
   } while(cfe_status == CFE_SUCCESS && pkt_count < TELECOM_PLATFORM_MAX_TLM_PKTS);
 }
+
+
+void TELECOM_read_ground_cmd(void){
+  CFE_SB_Buffer_t buff; 
+  int32 rc;
+  size_t read_size;
+
+  read_size = lora_controller_recv(&TELECOM_data.controller, (char *)&buff, sizeof(buff), &rc);
+  if (read_size > 0) {
+    CFE_SB_TransmitMsg(CFE_MSG_PTR(buff), false);
+    TELECOM_data.cmd_ingest_counter++;
+  }
+}

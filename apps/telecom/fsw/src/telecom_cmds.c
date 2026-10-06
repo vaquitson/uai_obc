@@ -17,8 +17,10 @@ CFE_Status_t TELECOM_send_hk_cmd(const TELECOM_SendHkCmd_t *data){
   CFE_EVS_SendEvent(TELECOM_CMD_RECIVED, CFE_EVS_EventType_INFORMATION,
                     "TELECOM: TELECOM_send_hk_cmd recived");
 
-  TELECOM_data.hk_tlm.payload.command_counter = TELECOM_data.cmd_counter;   
-  TELECOM_data.hk_tlm.payload.err_counter     = TELECOM_data.err_counter;   
+  TELECOM_data.hk_tlm.payload.command_counter    = TELECOM_data.cmd_counter;   
+  TELECOM_data.hk_tlm.payload.err_counter        = TELECOM_data.err_counter;   
+  TELECOM_data.hk_tlm.payload.cmd_ingest_counter = TELECOM_data.cmd_ingest_counter;
+  TELECOM_data.hk_tlm.payload.tlm_paquet_counter = TELECOM_data.tlm_paquet_counter;
 
   CFE_SB_TimeStampMsg(CFE_MSG_PTR(TELECOM_data.hk_tlm.TelemetryHeader));
   CFE_SB_TransmitMsg(CFE_MSG_PTR(TELECOM_data.hk_tlm.TelemetryHeader), true);

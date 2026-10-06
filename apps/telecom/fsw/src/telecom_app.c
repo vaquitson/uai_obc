@@ -86,7 +86,7 @@ CFE_Status_t TELECOM_APP_init(void){
   status = TELECOM_init_pipes();
   if (status != CFE_SUCCESS){
     CFE_EVS_SendEvent(TELECOM_PIPE_INITILIZATION_ERR, CFE_EVS_EventType_ERROR, 
-                      "TELECOM: Initialized succesfuly, RC = 0x%08lX", (unsigned long)status);
+                      "TELECOM: Pipe initialization error, RC = 0x%08lX", (unsigned long)status);
   }
 
   // Initialize house keeping telemetry msg
@@ -112,7 +112,6 @@ void TELECOM_process_cmd(void){
       break;
     }
     
-    TELECOM_data.cmd_counter++;
     TELECOM_task_pipe(sb_buf_p);
   }
 }
@@ -130,6 +129,8 @@ void TELECOM_AppMain(void){
     if (TELECOM_data.downlink_on == true){
       TELECOM_forward_tlm(); 
     }
+
+    TELECOM_forward_ground_cmd();
   }
   CFE_ES_ExitApp(TELECOM_data.run_status);
 }

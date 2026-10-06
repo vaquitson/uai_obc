@@ -10,6 +10,9 @@
 
 
 CFE_Status_t TELECOM_open_tlm(const void *ptr){
+  // Const void *ptr
+  // first 16 bytes are the IP addr 
+  // next 16 bytes has the port
   int32 status;
   const TELECOM_OpenTlmCmd_Payload_t *data = (TELECOM_OpenTlmCmd_Payload_t *)ptr;
   
@@ -40,7 +43,6 @@ void TELECOM_forward_tlm(void){
   static bool           dest_set  = false;
   int32                 os_status = 0;
   uint32                pkt_count = 0;
-  //uint16                port_num  = TELECOM_MISSION_TLM_IP_PORT; 
 
   const void           *net_buf_p;
   size_t               net_buf_s;
@@ -71,6 +73,7 @@ void TELECOM_forward_tlm(void){
           &net_buf_p, &net_buf_s);  
 
         if (cfe_status != CFE_SUCCESS){
+          TELECOM_data.err_counter++;
           CFE_EVS_SendEvent(TELECOM_ENCODE_ERR_EID, CFE_EVS_EventType_ERROR, 
                             "Error packing output: %d\n",
                             (int)cfe_status);
@@ -81,6 +84,7 @@ void TELECOM_forward_tlm(void){
             &dest_addr);
 
           if (os_status < 0){
+            TELECOM_data.err_counter++;
             CFE_EVS_SendEvent(TELECOM_SENDING_ERR_EID, CFE_EVS_EventType_ERROR,
                               "L%d TO sendto error %d. Tlm output error\n", __LINE__, (int)os_status);
           }
@@ -88,6 +92,28 @@ void TELECOM_forward_tlm(void){
       }
     }
     pkt_count++; 
+    TELECOM_data.tlm_paquet_counter++;
   } while (cfe_status == CFE_SUCCESS && pkt_count < TELECOM_PLATFORM_MAX_TLM_PKTS);
 
+}
+
+
+
+void TELECOM_forward_ground_cmd(void){
+  CFE_SB_Buffer_t buff; 
+  OS_SockAddr_t sender_addr;
+  int32 read_size;
+
+  read_size = OS_SocketRecvFrom(
+    TELECOM_data.cmd_sock_id,
+    (char *)&buff,
+    sizeof(buff),
+    &sender_addr,
+    OS_CHECK
+  );
+
+  if (read_size > 0) {
+    CFE_SB_TransmitMsg(CFE_MSG_PTR(buff), false); 
+    TELECOM_data.cmd_ingest_counter++;
+  }
 }

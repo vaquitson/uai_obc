@@ -151,12 +151,6 @@ void CMD_HAND_read_up_link(void){
 }
 
 
-void CMD_HAND_delete_callback(void)
-{
-    OS_printf("CMD HAND delete callback -- Closing CMD HAND Network socket.\n");
-    OS_close(CMD_HAND_data.tc_sock_id);
-}
-
 
 CFE_Status_t CMD_HAND_init(void){
   CFE_Status_t status;
@@ -175,15 +169,17 @@ CFE_Status_t CMD_HAND_init(void){
                          __LINE__);
   }
   
-  // Should wee shout down execuction on a pipe error ???
   status = CMD_HAND_pipe_init();
+  if (status != CFE_SUCCESS){
+    CFE_EVS_SendEvent(CMD_HAND_PIPE_INIT_ERR_EID, CFE_EVS_EventType_ERROR, 
+                      "CMD HAND: pipe initialization error, RC = 0x%08lX", (unsigned long)status);
+  }
+
 
   status = CMD_HAND_listening_sock_set_up();
   if (status == CFE_SUCCESS){
     CMD_HAND_data.sock_listening = true; 
   }
-
-  OS_TaskInstallDeleteHandler(&CMD_HAND_delete_callback);
 
   if (status == CFE_SUCCESS){
     CFE_EVS_SendEvent(CMD_HAND_SUCCESS_EID, 
@@ -212,7 +208,7 @@ void CMD_HAND_AppMain(void){
   }
   
   while (CFE_ES_RunLoop(&CMD_HAND_data.run_status) == true){ 
-    OS_TaskDelay(5000);
+    OS_TaskDelay(1000);
 
     if (CMD_HAND_data.sock_listening){
       CMD_HAND_read_up_link();
