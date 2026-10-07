@@ -106,23 +106,25 @@ void TELECOM_forward_tlm(void){
 
 
 void TELECOM_forward_ground_cmd(void){
-  char buffer[500];
-  CFE_SB_Buffer_t *buff; 
+
+  union {
+    CFE_SB_Buffer_t sb;
+    uint8 bytes[500];
+  } buffer;
+
   OS_SockAddr_t sender_addr;
   int32 read_size;
 
   read_size = OS_SocketRecvFrom(
     TELECOM_data.tlm_sock_id,
-    buffer,
+    buffer.bytes,
     sizeof(buffer),
     &sender_addr,
     OS_CHECK
   );
 
-  buff = (CFE_SB_Buffer_t *)&buffer;
-
   if (read_size > 0) {
-    CFE_SB_TransmitMsg(CFE_MSG_PTR(*buff), false); 
+    CFE_SB_TransmitMsg(CFE_MSG_PTR(buffer.sb), false); 
     TELECOM_data.cmd_ingest_counter++;
   }
 }
