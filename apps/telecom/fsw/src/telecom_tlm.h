@@ -15,4 +15,6 @@ void TELECOM_forward_tlm(void);
 CFE_Status_t TELECOM_open_tlm(const void *ptr);
 
 void TELECOM_forward_ground_cmd(void);
+
+CFE_Status_t TELECOM_init_communication_dev(void);
 #endif

@@ -94,6 +94,16 @@ CFE_Status_t TELECOM_APP_init(void){
                CFE_SB_ValueToMsgId(TELECOM_HK_TLM_MID),
                sizeof(TELECOM_data.hk_tlm));
 
+  status = TELECOM_init_communication_dev();
+  if (status != CFE_SUCCESS){
+    CFE_EVS_SendEvent(TELECOM_COMM_DEVICE_INIT_ERR_EID, CFE_EVS_EventType_ERROR, 
+                      "TELECOM: Communication device error, RC = 0x%08lX", (unsigned long)status);
+  } else {
+    CFE_EVS_SendEvent(TELECOM_COMM_DEVICE_INIT_ERR_EID, CFE_EVS_EventType_INFORMATION, 
+                      "TELECOM: Communication device initialized");
+
+  }
+
   if (status == CFE_SUCCESS)
     CFE_EVS_SendEvent(TELECOM_INIT_SUCCESFULL_EID, CFE_EVS_EventType_INFORMATION,
                       "TELECOM: Initialized succesfuly, RC = 0x%08lX", (unsigned long)status);

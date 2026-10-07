@@ -96,7 +96,7 @@ void OBC_HK_AppMain(void){
 
       CFE_MSG_SetFcnCode(CFE_MSG_PTR(msg_open_tlm.CommandHeader), 2);
       strcpy(msg_open_tlm.payload.dest_IP, "127.0.0.1");
-      strcpy(msg_open_tlm.payload.dest_port, "2234");  
+      strcpy(msg_open_tlm.payload.dest_port, "2234");
 
       OS_TaskDelay(2000);
       CFE_SB_TransmitMsg(CFE_MSG_PTR(msg_open_tlm.CommandHeader), true);

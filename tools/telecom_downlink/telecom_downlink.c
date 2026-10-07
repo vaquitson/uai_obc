@@ -74,8 +74,8 @@ static void show_packet(const unsigned char *data, size_t size)
 int main(int argc, char **argv)
 {
   int port = 2234;
-  int timeout = 10;
-  int count = 3;
+  int timeout = 120;
+  int count = 10;
   int received = 0;
   int fd;
   int result = 0;

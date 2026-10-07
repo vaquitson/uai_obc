@@ -51,9 +51,9 @@ typedef struct {
   CFE_SB_PipeId_t cmd_pipe;
 
   char            tlm_dest_ip[17];
-  char            tlm_port[10];
+  char            tlm_port[17];
+  char            listening_port[17];
   osal_id_t       tlm_sock_id;
-  osal_id_t       cmd_sock_id;
 
   uint8 cmd_counter;
   uint8 err_counter;

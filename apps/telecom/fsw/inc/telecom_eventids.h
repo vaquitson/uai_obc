@@ -15,6 +15,7 @@
 #define TELECOM_TLM_INIT_ERR           11
 #define TELECOM_CMD_RECIVED            12
 #define TELECOM_FC_CODE_UNRECOGNIZED   13
+#define TELECOM_COMM_DEVICE_INIT_ERR_EID 14
 
 #endif
 

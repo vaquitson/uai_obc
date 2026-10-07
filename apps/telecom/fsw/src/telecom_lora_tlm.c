@@ -11,33 +11,17 @@
 #include "telecom_internal_cfg.h"
 #include "telecom_msg.h"
 
-CFE_Status_t TELECOM_open_tlm(const void *ptr){
-  // const void *ptr
-  // first 16 bytes are the downlink frequency
-  // next 16 bytes are the uplink frequency
 
-  const TELECOM_OpenTlmCmd_Payload_t *payload;
+CFE_Status_t TELECOM_init_communication_dev(void){
   int rc;
   rc = lora_controller_init(&TELECOM_data.controller, TELECOM_MISSION_TLM_LORA_DEVICE_PATH);
   
-  payload = (TELECOM_OpenTlmCmd_Payload_t *)ptr;
-
-  memcpy(
-    TELECOM_data.controller.downlink_freq,
-    payload->downlink_freq,
-    10);
-
-  memcpy(
-    TELECOM_data.controller.uplink_freq,
-    payload->uplink_freq,
-    10);
-  
   if (rc > 0){
+    lora_controller_set_downlik_freq(&(TELECOM_data.controller), payload->uplink_freq);
     CFE_EVS_SendEvent(TELECOM_SUCCESS_EID, 
                       CFE_EVS_EventType_INFORMATION, 
-                      "LoRa Controller Ready");
+                      "LoRa Controller Ready For Uplink");
 
-    TELECOM_data.downlink_on = true;
     return CFE_SUCCESS;
   } else {
     CFE_EVS_SendEvent(TELECOM_OPEN_ERR_EID,
@@ -46,6 +30,24 @@ CFE_Status_t TELECOM_open_tlm(const void *ptr){
 
     return CFE_STATUS_EXTERNAL_RESOURCE_FAIL;
   }
+
+}
+
+CFE_Status_t TELECOM_open_tlm(const void *ptr){
+  // const void *ptr
+  // first 16 bytes are the downlink frequency
+  // next 16 bytes are the uplink frequency
+
+  const TELECOM_OpenTlmCmd_Payload_t *payload;
+  
+  payload = (TELECOM_OpenTlmCmd_Payload_t *)ptr;
+
+  lora_controller_set_uplink_freq(&(TELECOM_data.controller), payload->downlink_freq);
+  lora_controller_set_downlik_freq(&(TELECOM_data.controller), payload->uplink_freq);
+
+  TELECOM_data.downlink_on = true;
+  
+  return CFE_SUCCESS;
 }
 
 void TELECOM_forward_tlm(void){
