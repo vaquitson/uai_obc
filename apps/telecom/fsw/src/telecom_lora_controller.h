@@ -20,13 +20,14 @@
 #define CONTROLLER_SATE_RECV    1
 #define CONTROLLER_SATE_SEND    2
 
-#define LORA_CONTROLLER_SUCCESS            0
-#define LORA_CONTROLLER_WRITING_ERR       -1
-#define LORA_CONTROLLER_FD_ERR            -2
-#define LORA_CONTROLLER_NULL_PTR_ERR      -3
-#define LORA_CONTROLLER_FREQ_ERR          -4
-#define LORA_CONTROLLER_FREQ_IS_NOT_SET   -5
-#define LORA_CONTROLLER_NO_CONFIRMATION   -6
+#define LORA_CONTROLLER_SUCCESS             0
+#define LORA_CONTROLLER_WRITING_ERR        -1
+#define LORA_CONTROLLER_FD_ERR             -2
+#define LORA_CONTROLLER_NULL_PTR_ERR       -3
+#define LORA_CONTROLLER_FREQ_ERR           -4
+#define LORA_CONTROLLER_FREQ_IS_NOT_SET    -5
+#define LORA_CONTROLLER_NO_CONFIRMATION    -6
+#define LORA_CONTROLLER_RX_MSG_NOR_RECIVED -7
 
 typedef struct {
   osal_id_t fd;
@@ -46,12 +47,12 @@ int lora_controller_init(LoraController *cont, const char *path);
 /**
  * Set the uplink frequency of the controller.
 */
-void lora_controller_set_uplink_freq(LoraController *cont, char *freq);
+void lora_controller_set_uplink_freq(LoraController *cont, const char *freq);
 
 /** 
  * Set the downlik frequency for the controller
 */
-void lora_controller_set_downlik_freq(LoraController *cont, char *freq);
+void lora_controller_set_downlik_freq(LoraController *cont, const char *freq);
 
 /**
  * Get the uplink frequency currently beeing used in the controller

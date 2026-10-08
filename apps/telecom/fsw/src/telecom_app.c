@@ -128,7 +128,11 @@ void TELECOM_process_cmd(void){
 
 
 void TELECOM_AppMain(void){
-  if (TELECOM_APP_init() != CFE_SUCCESS){
+  CFE_Status_t status; 
+  if ((status = TELECOM_APP_init()) != CFE_SUCCESS){
+    CFE_EVS_SendEvent(TELECOM_APP_INIT_ERR_EID, CFE_EVS_EventType_ERROR,
+                      "TELECOM: Initialized error, RC = 0x%08lX", (unsigned long)status);
+
     TELECOM_data.run_status = CFE_ES_RunStatus_APP_ERROR;     
   }
 

@@ -14,10 +14,9 @@
 
 CFE_Status_t TELECOM_init_communication_dev(void){
   int rc;
-  rc = lora_controller_init(&TELECOM_data.controller, TELECOM_MISSION_TLM_LORA_DEVICE_PATH);
-  
+  rc = lora_controller_init(&TELECOM_data.controller, TELECOM_MISSION_TLM_LORA_DEVICE_PATH); 
   if (rc > 0){
-    lora_controller_set_downlik_freq(&(TELECOM_data.controller), payload->uplink_freq);
+    lora_controller_set_uplink_freq(&(TELECOM_data.controller), TELECOM_MISSION_DEFAULt_UPLINK_FREQ);
     CFE_EVS_SendEvent(TELECOM_SUCCESS_EID, 
                       CFE_EVS_EventType_INFORMATION, 
                       "LoRa Controller Ready For Uplink");
@@ -81,7 +80,7 @@ void TELECOM_forward_tlm(void){
 }
 
 
-void TELECOM_read_ground_cmd(void){
+void TELECOM_forward_ground_cmd(void){
   CFE_SB_Buffer_t buff; 
   int32 rc;
   size_t read_size;
@@ -92,3 +91,5 @@ void TELECOM_read_ground_cmd(void){
     TELECOM_data.cmd_ingest_counter++;
   }
 }
+
+

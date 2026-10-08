@@ -34,6 +34,8 @@ typedef struct {
 
   uint8 cmd_counter;
   uint8 err_counter;
+  uint8 cmd_ingest_counter;
+  uint8 tlm_paquet_counter;
 
   uint32          run_status;
   bool            downlink_on;

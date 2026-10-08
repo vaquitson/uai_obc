@@ -111,9 +111,9 @@ int lora_controller_init(LoraController *cont, const char *path){
     fd = serial_port_open(path);
     if (fd > 0){
       cont->fd = fd;
-    } else {
-      return fd;    
     }
+
+    return fd;    
   }
 
   cont->state = CONTROLLER_SATE_INVALID;
@@ -186,7 +186,7 @@ int lora_controller_set_freq(LoraController *cont, const char *freq_str){
 }
 
 
-void lora_controller_set_uplink_freq(LoraController *cont, char *freq){
+void lora_controller_set_uplink_freq(LoraController *cont, const char *freq){
   size_t len;
   len = strlen(freq); 
 
@@ -197,7 +197,7 @@ void lora_controller_set_uplink_freq(LoraController *cont, char *freq){
 }
 
 
-void lora_controller_set_downlik_freq(LoraController *cont, char *freq){
+void lora_controller_set_downlik_freq(LoraController *cont, const char *freq){
   size_t len;
   len = strlen(freq); 
 
@@ -241,6 +241,9 @@ int32 lora_controller_recv(LoraController *cont,
                              int *err){
   int rc;
   int32 bytes;
+  if (err == NULL){
+    return LORA_CONTROLLER_NULL_PTR_ERR;
+  }
 
   if (cont != NULL && buf != NULL && buf_size > 0){
     if (lora_controller_uplink_freq_is_set(cont)){
@@ -253,12 +256,22 @@ int32 lora_controller_recv(LoraController *cont,
           return -1;
         }
       }
-
+      
+      // read the RX: bytes
+      bytes = OS_TimedRead(lora_controller_get_fd(cont), buf, 3, LORA_CONTROLLER_IO_TIMEOUT_MS);
+      if (bytes != 3){
+        *err = LORA_CONTROLLER_FREQ_IS_NOT_SET;
+        return -1;
+      }
       bytes = OS_TimedRead(
         lora_controller_get_fd(cont),
         buf,
-        buf_size,
+        buf_size-1,
         LORA_CONTROLLER_IO_TIMEOUT_MS);
+
+      if (bytes <= 0){
+        return -1;
+      }
 
       return bytes;
 
