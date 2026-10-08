@@ -144,7 +144,9 @@ int lora_controller_init(LoraController *cont, const char *path){
  *
  */
 int lora_controller_set_freq(LoraController *cont, const char *freq_str){ 
+  static const char response_buf[] = "OK:FREQ_SET";
   char buf[50] = {0};
+  char res_buf[30] = {0};
   int32 bytes;
   size_t cmd_len;
   osal_id_t fd;
@@ -158,12 +160,22 @@ int lora_controller_set_freq(LoraController *cont, const char *freq_str){
     return LORA_CONTROLLER_FD_ERR;
   }
   
-  if (strlen(freq_str) <= MAX_FRQ_LEN){ 
+  if (strlen(freq_str) <= MAX_FRQ_LEN){
     snprintf(buf, 50, "FREQ:%s\n", freq_str);
     cmd_len = strlen(buf);
     bytes = OS_TimedWrite(fd, buf, cmd_len, LORA_CONTROLLER_IO_TIMEOUT_MS); 
     if (bytes >= 0 && (size_t)bytes == cmd_len){
-      return LORA_CONTROLLER_SUCCESS; 
+      bytes = OS_TimedRead(fd, res_buf, sizeof(res_buf)-1, LORA_CONTROLLER_IO_TIMEOUT_MS);
+      if (bytes > 0) {
+        res_buf[bytes] = '\0'; 
+        if (strstr(res_buf, response_buf) != NULL){
+          return LORA_CONTROLLER_SUCCESS;
+        } else {
+          return LORA_CONTROLLER_WRITING_ERR;
+        }
+      } else {
+        return LORA_CONTROLLER_NO_CONFIRMATION;
+      }
     } else {
       return LORA_CONTROLLER_WRITING_ERR;
     }
@@ -209,11 +221,13 @@ int32 lora_controller_send(LoraController *cont, const char *payload, size_t pay
       }
     }
 
+    OS_TimedWrite(lora_controller_get_fd(cont), "TX:", 3, LORA_CONTROLLER_IO_TIMEOUT_MS);
     bytes = OS_TimedWrite(
       lora_controller_get_fd(cont),
       payload,
       payload_len,
       LORA_CONTROLLER_IO_TIMEOUT_MS);
+    OS_TimedWrite(lora_controller_get_fd(cont), "\n", 1, LORA_CONTROLLER_IO_TIMEOUT_MS);
 
     return bytes;
   }

@@ -26,6 +26,7 @@
 #define LORA_CONTROLLER_NULL_PTR_ERR      -3
 #define LORA_CONTROLLER_FREQ_ERR          -4
 #define LORA_CONTROLLER_FREQ_IS_NOT_SET   -5
+#define LORA_CONTROLLER_NO_CONFIRMATION   -6
 
 typedef struct {
   osal_id_t fd;
