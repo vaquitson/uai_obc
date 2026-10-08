@@ -6,7 +6,7 @@
 
 //#define SEND_FREQ "435.500"
 
-/* Timeout per OSAL I/O operation, including frequency commands. */
+/* Timeout per POSIX I/O operation, including frequency commands. */
 #define LORA_CONTROLLER_IO_TIMEOUT_MS 1000
 
 #define RECV_FREQ "435.500"
@@ -30,7 +30,7 @@
 #define LORA_CONTROLLER_RX_MSG_NOR_RECIVED -7
 
 typedef struct {
-  osal_id_t fd;
+  int fd; /* POSIX descriptor; -1 when not open. */
   int state;
   char downlink_freq[10];
   char uplink_freq[10];
@@ -73,13 +73,13 @@ const char *lora_controller_get_downlink_freq(const LoraController *con);
  * Each I/O operation has its own 1000 ms timeout; switching frequency and
  * writing the payload can therefore require two separate waits.
  *
- * @param[in,out] cont Controller with an assigned OSAL handle.
+ * @param[in,out] cont Controller with an open POSIX descriptor.
  * @param[in] payload Data to send; need not be null-terminated.
  * @param[in] payload_len Number of bytes to write; must be greater than zero.
  * @return Nonnegative number of bytes written, which may be less than
  *         payload_len; partial writes are not retried. Returns -1 for NULL
- *         arguments or frequency setup failure. Otherwise returns the OSAL
- *         write error, including OS_ERROR_TIMEOUT if the payload write times out.
+ *         arguments or frequency setup failure. POSIX I/O failures map to
+ *         OS_ERROR, and payload write timeouts map to OS_ERROR_TIMEOUT.
  */
 int32 lora_controller_send(LoraController *cont, const char *str, size_t str_len);
 
@@ -92,18 +92,17 @@ int32 lora_controller_send(LoraController *cont, const char *str, size_t str_len
  * Each I/O operation has its own 1000 ms timeout; switching frequency and
  * reading data can therefore require two separate waits.
  *
- * @param[in,out] cont Controller with an assigned OSAL handle.
+ * @param[in,out] cont Controller with an open POSIX descriptor.
  * @param[out] buf Destination buffer for the received bytes.
  * @param[in] buf_size Buffer capacity in bytes; must be greater than zero.
- * @param[in] err Unused parameter; may be NULL and is never modified.
- * @return Number of bytes read, or 0 at end of stream. Returns -1 for a NULL
- *         controller or buffer, zero buffer capacity, or frequency setup
- *         failure. Otherwise returns the OSAL read error, including
- *         OS_ERROR_TIMEOUT if no data arrives before the read timeout.
+ * @param[out] err Required error pointer; set on frequency/prefix errors.
+ * @return Positive number of payload bytes read, or a negative value on
+ *         invalid arguments, I/O error, timeout, or end of stream.
  */
 int32 lora_controller_recv(LoraController *cont, char *buf, size_t buf_size, int *err);
 
-void lora_controller_set_fd(LoraController *con, osal_id_t fd);
+/* Assigned descriptors must be nonblocking to preserve I/O timeouts. */
+void lora_controller_set_fd(LoraController *con, int fd);
 
 const char *lora_controller_get_uplink_freq(const LoraController *con);
 
@@ -119,6 +118,6 @@ bool lora_controller_downlink_freq_is_set(const LoraController *cont);
 */
 bool lora_controller_uplink_freq_is_set(const LoraController *cont);
 
-osal_id_t lora_controller_get_fd(LoraController *con);
+int lora_controller_get_fd(LoraController *con);
 
 #endif

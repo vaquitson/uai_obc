@@ -15,6 +15,7 @@
 CFE_Status_t TELECOM_init_communication_dev(void){
   int rc;
   rc = lora_controller_init(&TELECOM_data.controller, TELECOM_MISSION_TLM_LORA_DEVICE_PATH); 
+
   if (rc > 0){
     lora_controller_set_uplink_freq(&(TELECOM_data.controller), TELECOM_MISSION_DEFAULt_UPLINK_FREQ);
     CFE_EVS_SendEvent(TELECOM_SUCCESS_EID, 
@@ -83,7 +84,7 @@ void TELECOM_forward_tlm(void){
 void TELECOM_forward_ground_cmd(void){
   CFE_SB_Buffer_t buff; 
   int32 rc;
-  size_t read_size;
+  int32 read_size;
 
   read_size = lora_controller_recv(&TELECOM_data.controller, (char *)&buff, sizeof(buff), &rc);
   if (read_size > 0) {
