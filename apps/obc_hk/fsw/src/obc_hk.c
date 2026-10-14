@@ -117,7 +117,7 @@ void OBC_HK_AppMain(void){
       strcpy(msg_open_tlm.payload.dest_port, "2234");
 
       
-           OS_TaskDelay(2000);
+      OS_TaskDelay(2000);
       CFE_SB_TransmitMsg(CFE_MSG_PTR(msg_open_tlm.CommandHeader), true);
 
       OS_TaskDelay(1000);
@@ -125,7 +125,7 @@ void OBC_HK_AppMain(void){
 
 
       OS_TaskDelay(1000);
-      CFE_SB_TransmitMsg(CFE_MSG_PTR(msg_open_tlm.CommandHeader), true);
+      CFE_SB_TransmitMsg(CFE_MSG_PTR(payload_list_sesions.command_header), true);
       vooolatile = true;
     }
 
