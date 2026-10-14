@@ -1,9 +1,12 @@
-CC ?= cc
+CC = gcc
 CFLAGS ?= -O2 -Wall -Wextra -Wpedantic
 PYTHON ?= python3
 
 .PHONY: all test test-udp clean
 all: telecom_uplink
+
+debug:
+	$(CC) -g -std=c99 -o uplink_debug ./telecom_uplink.c 
 
 telecom_uplink: telecom_uplink.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) -std=c99 $(LDFLAGS) -o $@ $< $(LDLIBS)

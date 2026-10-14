@@ -31,5 +31,6 @@
 #define PAYLOAD_APP_CMD_LEN_ERR_EID         26 /* ERROR: command packet length mismatch */
 #define PAYLOAD_APP_BUSY_RETRY_EID          27 /* INFO: BUSY received, retrying */
 #define PAYLOAD_APP_WORKER_ERR_EID          28 /* ERROR: worker/queue internal error or request discarded */
+#define PAYLOAD_APP_CMD_RECIVED_EID         29
 
 #endif

@@ -13,6 +13,9 @@
 #include "obc_hk_dispatch.h"
 #include "obc_hk_internal_cfg.h"
 
+//payload app
+#include "payload_app_msg.h"
+
 // temporal for quick testing
 #include "telecom_msg.h"
 
@@ -86,23 +89,43 @@ void OBC_HK_AppMain(void){
     if (vooolatile == false){
       TELECOM_OpenTlmCmd_t msg_open_tlm; 
       TELECOM_SendHkCmd_t msg_hk; 
+      PAYLOAD_APP_NoArgsCmd_t payload_list_sesions;
+
+      
+      // TELECOM OPEN TLM MSG ID
       CFE_MSG_Init(CFE_MSG_PTR(msg_open_tlm.CommandHeader),
                    CFE_SB_ValueToMsgId(0x187A),
                    sizeof(msg_open_tlm));
 
+      // TELECOM HK
       CFE_MSG_Init(CFE_MSG_PTR(msg_hk.CommandHeader),
                    CFE_SB_ValueToMsgId(123),
                    sizeof(msg_hk));
 
+      // PAYLOAD APP LIST SESSIONS
+      CFE_MSG_Init(CFE_MSG_PTR(payload_list_sesions.command_header),
+                   CFE_SB_ValueToMsgId(0x188C),
+                   sizeof(payload_list_sesions));
+
+       CFE_MSG_SetFcnCode(CFE_MSG_PTR(payload_list_sesions.command_header), 6);
+
+
+
+      // TELECOM OPEN TLM
       CFE_MSG_SetFcnCode(CFE_MSG_PTR(msg_open_tlm.CommandHeader), 2);
       strcpy(msg_open_tlm.payload.dest_IP, "127.0.0.1");
       strcpy(msg_open_tlm.payload.dest_port, "2234");
 
-      OS_TaskDelay(2000);
+      
+           OS_TaskDelay(2000);
       CFE_SB_TransmitMsg(CFE_MSG_PTR(msg_open_tlm.CommandHeader), true);
 
       OS_TaskDelay(1000);
       CFE_SB_TransmitMsg(CFE_MSG_PTR(msg_hk.CommandHeader), true);
+
+
+      OS_TaskDelay(1000);
+      CFE_SB_TransmitMsg(CFE_MSG_PTR(msg_open_tlm.CommandHeader), true);
       vooolatile = true;
     }
 

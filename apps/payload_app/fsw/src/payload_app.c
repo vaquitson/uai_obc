@@ -16,6 +16,7 @@
 
 /* Compile-time layout checks: no implicit padding on any target (see msgdefs) */
 #define PAYLOAD_APP_SIZE_CHECK(name, cond) typedef char name[(cond) ? 1 : -1]
+
 PAYLOAD_APP_SIZE_CHECK(PAYLOAD_APP_HkPayloadSize_t, sizeof(PAYLOAD_APP_HkTlm_Payload_t) == 64);
 PAYLOAD_APP_SIZE_CHECK(PAYLOAD_APP_SessionInfoCmdSize_t, sizeof(PAYLOAD_APP_SessionInfoCmd_Payload_t) == 20);
 PAYLOAD_APP_SIZE_CHECK(PAYLOAD_APP_ReadRangeCmdSize_t, sizeof(PAYLOAD_APP_ReadRangeCmd_Payload_t) == 28);
@@ -254,14 +255,12 @@ void PAYLOAD_APP_AppMain(void)
   CFE_ES_ExitApp(PAYLOAD_APP_Global.run_status);
 }
 
-void PAYLOAD_APP_ProcessCommandPacket(const CFE_SB_Buffer_t *sb_buf_ptr)
-{
+void PAYLOAD_APP_ProcessCommandPacket(const CFE_SB_Buffer_t *sb_buf_ptr){
   CFE_SB_MsgId_t msg_id = CFE_SB_INVALID_MSG_ID;
 
   CFE_MSG_GetMsgId(&sb_buf_ptr->Msg, &msg_id);
 
-  switch (CFE_SB_MsgIdToValue(msg_id))
-  {
+  switch (CFE_SB_MsgIdToValue(msg_id)){
     case PAYLOAD_APP_CMD_MID:
       PAYLOAD_APP_ProcessGroundCommand(sb_buf_ptr);
       break;
@@ -309,18 +308,15 @@ static void PAYLOAD_APP_ResetCounters(void)
                      "PAYLOAD_APP: counters reset");
 }
 
-static void PAYLOAD_APP_QueueOp(uint8 op)
-{
+static void PAYLOAD_APP_QueueOp(uint8 op){
   PAYLOAD_APP_Request_t req;
-
   memset(&req, 0, sizeof(req));
   req.op = op;
   PAYLOAD_APP_CountCmd(PAYLOAD_APP_Enqueue(&req));
 }
 
 /* Copies a command session_id; it must be NUL-terminated and look like YYYYMMDDTHHMMSSZ */
-static bool PAYLOAD_APP_ValidSessionId(uint8 op, const char *raw, char *out)
-{
+static bool PAYLOAD_APP_ValidSessionId(uint8 op, const char *raw, char *out){
   char shown[PAYLOAD_APP_SESSION_ID_LEN];
   int  i;
 
@@ -379,22 +375,21 @@ static void PAYLOAD_APP_QueueReadRange(const CFE_SB_Buffer_t *sb_buf_ptr)
   PAYLOAD_APP_CountCmd(PAYLOAD_APP_Enqueue(&req));
 }
 
-void PAYLOAD_APP_ProcessGroundCommand(const CFE_SB_Buffer_t *sb_buf_ptr)
-{
+void PAYLOAD_APP_ProcessGroundCommand(const CFE_SB_Buffer_t *sb_buf_ptr){
   CFE_MSG_FcnCode_t fcn_code = 0;
 
   CFE_MSG_GetFcnCode(&sb_buf_ptr->Msg, &fcn_code);
 
-  switch (fcn_code)
-  {
+  switch (fcn_code){
     case PAYLOAD_APP_NOOP_CC:
       if (PAYLOAD_APP_VerifyLength(sb_buf_ptr, sizeof(PAYLOAD_APP_NoArgsCmd_t)))
         PAYLOAD_APP_Noop();
       break;
 
     case PAYLOAD_APP_RESET_COUNTERS_CC:
-      if (PAYLOAD_APP_VerifyLength(sb_buf_ptr, sizeof(PAYLOAD_APP_NoArgsCmd_t)))
+      if (PAYLOAD_APP_VerifyLength(sb_buf_ptr, sizeof(PAYLOAD_APP_NoArgsCmd_t))){
         PAYLOAD_APP_ResetCounters();
+      }
       break;
 
     case PAYLOAD_APP_GET_STATUS_CC:
@@ -402,8 +397,13 @@ void PAYLOAD_APP_ProcessGroundCommand(const CFE_SB_Buffer_t *sb_buf_ptr)
     case PAYLOAD_APP_STOP_ACQUISITION_CC:
     case PAYLOAD_APP_GET_LIVE_STATE_CC:
     case PAYLOAD_APP_LIST_SESSIONS_CC:
-      if (PAYLOAD_APP_VerifyLength(sb_buf_ptr, sizeof(PAYLOAD_APP_NoArgsCmd_t)))
+      if (PAYLOAD_APP_VerifyLength(sb_buf_ptr, sizeof(PAYLOAD_APP_NoArgsCmd_t))){
+        CFE_EVS_SendEvent(PAYLOAD_APP_CMD_RECIVED_EID, 
+                          CFE_EVS_EventType_INFORMATION,
+                          "PAYLOAS_APP: payloas_app_queue_op recived");
+
         PAYLOAD_APP_QueueOp((uint8)fcn_code);
+      }
       break;
 
     case PAYLOAD_APP_GET_SESSION_INFO_CC:
@@ -424,8 +424,7 @@ void PAYLOAD_APP_ProcessGroundCommand(const CFE_SB_Buffer_t *sb_buf_ptr)
   }
 }
 
-void PAYLOAD_APP_SendHk(void)
-{
+void PAYLOAD_APP_SendHk(void){
   int32 status;
 
   PAYLOAD_APP_HkLock();
