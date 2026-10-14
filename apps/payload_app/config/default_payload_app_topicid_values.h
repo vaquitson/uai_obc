@@ -1,0 +1,10 @@
+/**
+ * @file
+ *   Specification for the PAYLOAD_APP topic ID values
+ */
+#ifndef DEFAULT_PAYLOAD_APP_TOPICID_VALUES_H
+#define DEFAULT_PAYLOAD_APP_TOPICID_VALUES_H
+
+#define PAYLOAD_APP_MISSION_TIDVAL(x) DEFAULT_PAYLOAD_APP_MISSION_##x##_TOPICID
+
+#endif

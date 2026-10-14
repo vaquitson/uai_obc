@@ -105,10 +105,10 @@ SET(MISSION_CPUNAMES cpu1)
 # SET(OBC_PLATFORM_LINUX 1)
 
 # MISSION COMM FLAG
-SET(COMMUNICATION_LORA 1)
+# SET(COMMUNICATION_LORA 1)
 
 SET(cpu1_PROCESSORID 1)
-SET(cpu1_APPLIST ci_lab to_lab sch_lab telecom obc_hk obc_hw_lib cmd_hand)
+SET(cpu1_APPLIST ci_lab to_lab sch_lab telecom obc_hk obc_hw_lib cmd_hand payload_app)
 SET(cpu1_FILELIST cfe_es_startup.scr)
 SET(cpu1_SYSTEM i686-linux-gnu)
 
