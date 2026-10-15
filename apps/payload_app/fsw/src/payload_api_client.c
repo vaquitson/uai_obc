@@ -354,7 +354,7 @@ PAYLOAD_API_Result_t PAYLOAD_API_Transact(const char *socket_path, const char *r
     result = PAYLOAD_API_SendFrame(fd, req, req_len, deadline_ms, err_no);
   if (result == PAYLOAD_API_OK)
     result = PAYLOAD_API_RecvFrame(fd, resp, resp_size, resp_len, deadline_ms, err_no, header_out);
-
+  printf("%s\n", header_out);
   close(fd);
   return result;
 }

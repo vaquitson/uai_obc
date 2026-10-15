@@ -297,12 +297,10 @@ static void PAYLOAD_APP_Execute(const PAYLOAD_APP_Request_t *req){
     timeout_ms = PAYLOAD_APP_ACQ_TIMEOUT_MS;
   PAYLOAD_APP_BuildArgs(req, args, sizeof(args));
 
-  for (;;)
-  {
+  for (;;){
     rid     = PAYLOAD_APP_Worker.next_request_id++;
     req_len = PAYLOAD_JSON_BuildRequest(PAYLOAD_APP_TxBuf, sizeof(PAYLOAD_APP_TxBuf), rid, op, args);
-    if (req_len < 0)
-    {
+    if (req_len < 0){
       CFE_EVS_SendEvent(PAYLOAD_APP_WORKER_ERR_EID, CFE_EVS_EventType_ERROR, "%s: request does not fit %u B", op,
                         (unsigned int)sizeof(PAYLOAD_APP_TxBuf));
       PAYLOAD_APP_ReqErr(PAYLOAD_API_STATUS_OK);
@@ -317,10 +315,8 @@ static void PAYLOAD_APP_Execute(const PAYLOAD_APP_Request_t *req){
                                   PAYLOAD_APP_RxBuf, sizeof(PAYLOAD_APP_RxBuf), &resp_len, timeout_ms, &err_no,
                                   header);
 
-    printf("%s\n", header);
 
-    if (PAYLOAD_API_IsConnectError(result))
-    {
+    if (PAYLOAD_API_IsConnectError(result)){
       PAYLOAD_APP_ReportConnectFailure(result, err_no);
 
       /* Probes make a single attempt and are not counted; the worker loop schedules the next one */
@@ -353,8 +349,7 @@ static void PAYLOAD_APP_Execute(const PAYLOAD_APP_Request_t *req){
     /* Anything past connect() means the service is up, even if this exchange then fails */
     recovered = PAYLOAD_APP_ReportConnected(op);
 
-    if (result != PAYLOAD_API_OK)
-    {
+    if (result != PAYLOAD_API_OK){
       PAYLOAD_APP_ReportTransportError(op, rid, result, err_no, header, timeout_ms);
       PAYLOAD_APP_ReqErr(PAYLOAD_API_STATUS_OK);
       return;
@@ -362,22 +357,22 @@ static void PAYLOAD_APP_Execute(const PAYLOAD_APP_Request_t *req){
 
     json_result = PAYLOAD_JSON_Parse(&doc, PAYLOAD_APP_RxBuf, resp_len, PAYLOAD_APP_Tokens,
                                      PAYLOAD_APP_JSON_MAX_TOKENS);
-    if (json_result != PAYLOAD_JSON_OK)
-    {
+
+    if (json_result != PAYLOAD_JSON_OK){
       CFE_EVS_SendEvent(PAYLOAD_APP_JSON_ERR_EID, CFE_EVS_EventType_ERROR, "%s rid=%lu: %s", op, (unsigned long)rid,
                         PAYLOAD_APP_JsonResultText(json_result));
       PAYLOAD_APP_ReqErr(PAYLOAD_API_STATUS_OK);
       return;
     }
-    if (PAYLOAD_JSON_ParseEnvelope(&doc, &env, why, sizeof(why)) != PAYLOAD_JSON_OK)
-    {
+
+    if (PAYLOAD_JSON_ParseEnvelope(&doc, &env, why, sizeof(why)) != PAYLOAD_JSON_OK){
       CFE_EVS_SendEvent(PAYLOAD_APP_JSON_ERR_EID, CFE_EVS_EventType_ERROR, "%s rid=%lu: bad envelope, %s", op,
                         (unsigned long)rid, why);
       PAYLOAD_APP_ReqErr(PAYLOAD_API_STATUS_OK);
       return;
     }
-    if (env.request_id != rid)
-    {
+
+    if (env.request_id != rid){
       CFE_EVS_SendEvent(PAYLOAD_APP_RID_MISMATCH_EID, CFE_EVS_EventType_ERROR,
                         "%s sent rid=%lu but response has rid=%lu, discarded", op, (unsigned long)rid,
                         (unsigned long)env.request_id);
@@ -432,8 +427,7 @@ static void PAYLOAD_APP_Probe(void)
   PAYLOAD_APP_Execute(&req);
 }
 
-void PAYLOAD_APP_WorkerMain(void)
-{
+void PAYLOAD_APP_WorkerMain(void){
   PAYLOAD_APP_Request_t req;
   size_t                copied;
   int32                 status;
@@ -442,10 +436,8 @@ void PAYLOAD_APP_WorkerMain(void)
   PAYLOAD_APP_Worker.next_request_id    = 1;
   PAYLOAD_APP_Worker.connect_backoff_ms = PAYLOAD_APP_CONNECT_BACKOFF_MIN_MS;
 
-  for (;;)
-  {
-    if (PAYLOAD_APP_Worker.revalidate && !PAYLOAD_APP_Worker.probing)
-    {
+  for (;;) {
+    if (PAYLOAD_APP_Worker.revalidate && !PAYLOAD_APP_Worker.probing) {
       PAYLOAD_APP_Worker.revalidate = false;
       PAYLOAD_APP_Probe();
       continue;
@@ -455,17 +447,14 @@ void PAYLOAD_APP_WorkerMain(void)
     copied = 0;
     status = OS_QueueGet(PAYLOAD_APP_Global.req_queue, &req, sizeof(req), &copied,
                          PAYLOAD_APP_Worker.probing ? (int32)PAYLOAD_APP_Worker.connect_backoff_ms : 1000);
-    if (status == OS_SUCCESS && copied == sizeof(req))
-    {
+
+    if (status == OS_SUCCESS && copied == sizeof(req)){
       PAYLOAD_APP_Execute(&req);
-    }
-    else if (status == OS_QUEUE_TIMEOUT)
-    {
+
+    } else if (status == OS_QUEUE_TIMEOUT) {
       if (PAYLOAD_APP_Worker.probing)
         PAYLOAD_APP_Probe();
-    }
-    else
-    {
+    } else {
       CFE_EVS_SendEvent(PAYLOAD_APP_WORKER_ERR_EID, CFE_EVS_EventType_ERROR,
                         "Request queue read failed, RC = %ld, size = %lu", (long)status, (unsigned long)copied);
       OS_TaskDelay(1000);
