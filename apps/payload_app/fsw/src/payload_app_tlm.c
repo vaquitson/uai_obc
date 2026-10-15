@@ -314,8 +314,7 @@ bool PAYLOAD_APP_TlmSessionList(const PAYLOAD_JSON_Doc_t *doc, int data, uint32 
   return true;
 }
 
-bool PAYLOAD_APP_TlmSessionInfo(const PAYLOAD_JSON_Doc_t *doc, int data, uint32 request_id, const char *session_id)
-{
+bool PAYLOAD_APP_TlmSessionInfo(const PAYLOAD_JSON_Doc_t *doc, int data, uint32 request_id, const char *session_id){
   PAYLOAD_APP_ParseSession(doc, data, session_id, &PAYLOAD_APP_SessionPkt.payload);
   PAYLOAD_APP_SessionPkt.payload.request_id    = request_id;
   PAYLOAD_APP_SessionPkt.payload.session_index = 0;

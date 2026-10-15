@@ -315,7 +315,7 @@ static void PAYLOAD_APP_Execute(const PAYLOAD_APP_Request_t *req){
                                   PAYLOAD_APP_RxBuf, sizeof(PAYLOAD_APP_RxBuf), &resp_len, timeout_ms, &err_no,
                                   header);
 
-
+    printf("%s\n", PAYLOAD_APP_RxBuf);
     if (PAYLOAD_API_IsConnectError(result)){
       PAYLOAD_APP_ReportConnectFailure(result, err_no);
 
@@ -348,6 +348,7 @@ static void PAYLOAD_APP_Execute(const PAYLOAD_APP_Request_t *req){
 
     /* Anything past connect() means the service is up, even if this exchange then fails */
     recovered = PAYLOAD_APP_ReportConnected(op);
+    
 
     if (result != PAYLOAD_API_OK){
       PAYLOAD_APP_ReportTransportError(op, rid, result, err_no, header, timeout_ms);
