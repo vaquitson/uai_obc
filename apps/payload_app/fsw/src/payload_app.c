@@ -35,10 +35,8 @@ PAYLOAD_APP_SIZE_CHECK(PAYLOAD_APP_ChunkPayloadSize_t,
 
 PAYLOAD_APP_GlobalApp_t PAYLOAD_APP_Global;
 
-const char *PAYLOAD_APP_OpName(uint8 op)
-{
-  switch (op)
-  {
+const char *PAYLOAD_APP_OpName(uint8 op) {
+  switch (op) {
     case PAYLOAD_APP_GET_STATUS_CC:
       return "GET_STATUS";
     case PAYLOAD_APP_START_ACQUISITION_CC:
@@ -58,28 +56,25 @@ const char *PAYLOAD_APP_OpName(uint8 op)
   }
 }
 
-void PAYLOAD_APP_HkLock(void)
-{
+void PAYLOAD_APP_HkLock(void){
   OS_MutSemTake(PAYLOAD_APP_Global.hk_mutex);
 }
 
-void PAYLOAD_APP_HkUnlock(void)
-{
+void PAYLOAD_APP_HkUnlock(void){
   OS_MutSemGive(PAYLOAD_APP_Global.hk_mutex);
 }
 
-static void PAYLOAD_APP_CountCmd(bool ok)
-{
+static void PAYLOAD_APP_CountCmd(bool ok){
   PAYLOAD_APP_HkLock();
-  if (ok)
+  if (ok){
     PAYLOAD_APP_Global.hk_packet.payload.cmd_counter++;
-  else
+  } else {
     PAYLOAD_APP_Global.hk_packet.payload.err_counter++;
-  PAYLOAD_APP_HkUnlock();
+    PAYLOAD_APP_HkUnlock();
+  }
 }
 
-static void PAYLOAD_APP_InitHk(void)
-{
+static void PAYLOAD_APP_InitHk(void){
   PAYLOAD_APP_HkTlm_Payload_t *hk = &PAYLOAD_APP_Global.hk_packet.payload;
 
   memset(hk, 0, sizeof(*hk));
@@ -91,23 +86,18 @@ static void PAYLOAD_APP_InitHk(void)
   hk->tlm_layout_version      = PAYLOAD_APP_TLM_LAYOUT_VERSION;
 }
 
-static void PAYLOAD_APP_InitSocketPath(void)
-{
+static void PAYLOAD_APP_InitSocketPath(void){
   const char *env    = getenv(PAYLOAD_APP_SOCKET_PATH_ENV);
   const char *source = "default";
 
   snprintf(PAYLOAD_APP_Global.socket_path, sizeof(PAYLOAD_APP_Global.socket_path), "%s",
            PAYLOAD_APP_SOCKET_PATH_DEFAULT);
 
-  if (env != NULL && env[0] != '\0')
-  {
-    if (strlen(env) < sizeof(PAYLOAD_APP_Global.socket_path))
-    {
+  if (env != NULL && env[0] != '\0'){
+    if (strlen(env) < sizeof(PAYLOAD_APP_Global.socket_path)){
       snprintf(PAYLOAD_APP_Global.socket_path, sizeof(PAYLOAD_APP_Global.socket_path), "%s", env);
       source = "env";
-    }
-    else
-    {
+    } else{
       CFE_EVS_SendEvent(PAYLOAD_APP_INIT_FAILURE_EID, CFE_EVS_EventType_ERROR,
                         "%s too long (%lu chars, max %lu), using default", PAYLOAD_APP_SOCKET_PATH_ENV,
                         (unsigned long)strlen(env), (unsigned long)sizeof(PAYLOAD_APP_Global.socket_path) - 1);
@@ -119,25 +109,26 @@ static void PAYLOAD_APP_InitSocketPath(void)
 }
 
 /* Never blocks: a full queue drops the request with an event */
-static bool PAYLOAD_APP_Enqueue(const PAYLOAD_APP_Request_t *req)
-{
+static bool PAYLOAD_APP_Enqueue(const PAYLOAD_APP_Request_t *req){
   int32 status = OS_QueuePut(PAYLOAD_APP_Global.req_queue, req, sizeof(*req), 0);
 
-  if (status == OS_SUCCESS)
+  if (status == OS_SUCCESS){
     return true;
+  }
 
-  if (status == OS_QUEUE_FULL)
+  if (status == OS_QUEUE_FULL){
     CFE_EVS_SendEvent(PAYLOAD_APP_QUEUE_FULL_EID, CFE_EVS_EventType_ERROR,
                       "%s dropped: request queue full (%d)", PAYLOAD_APP_OpName(req->op),
                       PAYLOAD_APP_REQ_QUEUE_DEPTH);
-  else
+  } else {
     CFE_EVS_SendEvent(PAYLOAD_APP_WORKER_ERR_EID, CFE_EVS_EventType_ERROR, "%s dropped: queue put RC = %ld",
                       PAYLOAD_APP_OpName(req->op), (long)status);
+  }
+
   return false;
 }
 
-CFE_Status_t PAYLOAD_APP_Init(void)
-{
+CFE_Status_t PAYLOAD_APP_Init(void){
   int32                 status;
   PAYLOAD_APP_Request_t startup_req;
 

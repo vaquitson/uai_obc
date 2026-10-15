@@ -267,8 +267,7 @@ static void PAYLOAD_APP_BuildArgs(const PAYLOAD_APP_Request_t *req, char *buf, s
   }
 }
 
-static void PAYLOAD_APP_Execute(const PAYLOAD_APP_Request_t *req)
-{
+static void PAYLOAD_APP_Execute(const PAYLOAD_APP_Request_t *req){
   const char             *op                = PAYLOAD_APP_OpName(req->op);
   uint32                  timeout_ms        = PAYLOAD_APP_QUERY_TIMEOUT_MS;
   uint64_t                unreachable_since = 0;
@@ -288,12 +287,12 @@ static void PAYLOAD_APP_Execute(const PAYLOAD_APP_Request_t *req)
   PAYLOAD_JSON_Doc_t      doc;
   PAYLOAD_JSON_Envelope_t env;
 
-  if (op == NULL)
-  {
+  if (op == NULL){
     CFE_EVS_SendEvent(PAYLOAD_APP_WORKER_ERR_EID, CFE_EVS_EventType_ERROR, "Queued request with unknown op %u",
                       (unsigned int)req->op);
     return;
-  }
+  } 
+
   if (req->op == PAYLOAD_APP_START_ACQUISITION_CC || req->op == PAYLOAD_APP_STOP_ACQUISITION_CC)
     timeout_ms = PAYLOAD_APP_ACQ_TIMEOUT_MS;
   PAYLOAD_APP_BuildArgs(req, args, sizeof(args));
@@ -317,6 +316,8 @@ static void PAYLOAD_APP_Execute(const PAYLOAD_APP_Request_t *req)
     result = PAYLOAD_API_Transact(PAYLOAD_APP_Global.socket_path, PAYLOAD_APP_TxBuf, (size_t)req_len,
                                   PAYLOAD_APP_RxBuf, sizeof(PAYLOAD_APP_RxBuf), &resp_len, timeout_ms, &err_no,
                                   header);
+
+    printf("%s\n", header);
 
     if (PAYLOAD_API_IsConnectError(result))
     {
