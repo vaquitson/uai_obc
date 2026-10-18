@@ -16,6 +16,7 @@
 #include "telecom_app.h"
 #include "telecom_encode.h"
 #include "obc_hk_msg.h"
+#include "payload_app_msg.h"
 
 // subscription array
 uint32 TLM_SUBSCRIPTION_ARR[] = {
@@ -25,7 +26,11 @@ uint32 TLM_SUBSCRIPTION_ARR[] = {
   OBC_HK_RAM_USAGE_MID,
   OBC_HK_CPU_USAGE_MID,
   TELECOM_OPEN_TLM_MID,
-  TELECOM_HK_TLM_MID
+  TELECOM_HK_TLM_MID,
+  PAYLOAD_APP_TLM_MID,
+  PAYLOAD_APP_DATA_TLM_MID,
+  PAYLOAD_APP_SESSION_TLM_MID,
+  PAYLOAD_APP_CHUNK_TLM_MID
 };
 
 uint32 CMD_SUBSCRIPTION_ARR[] = {

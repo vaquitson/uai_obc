@@ -70,8 +70,8 @@ static void PAYLOAD_APP_CountCmd(bool ok){
     PAYLOAD_APP_Global.hk_packet.payload.cmd_counter++;
   } else {
     PAYLOAD_APP_Global.hk_packet.payload.err_counter++;
-    PAYLOAD_APP_HkUnlock();
   }
+  PAYLOAD_APP_HkUnlock();
 }
 
 static void PAYLOAD_APP_InitHk(void){
