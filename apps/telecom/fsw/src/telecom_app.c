@@ -44,14 +44,14 @@ CFE_Status_t TELECOM_init_pipes(void){
   CFE_Status_t status;
 
   strncpy(TELECOM_data.tlm_pipe_name, TELECOM_TLM_PIPE_NAME, TELECOM_TLM_PIPE_NAME_MAX);
-  status = CFE_SB_CreatePipe(&TELECOM_data.tlm_pipe, 10, TELECOM_data.tlm_pipe_name);
+  status = CFE_SB_CreatePipe(&TELECOM_data.tlm_pipe, 40, TELECOM_data.tlm_pipe_name); 
   if (status != CFE_SUCCESS)
     CFE_EVS_SendEvent(TELECOM_PIPE_CREATION_ERR_EID, CFE_EVS_EventType_ERROR,
                       "TELECOM: Faild to properly crate the tlm pipe,  RC = 0x%08lX", (unsigned long)status);
 
 
   for (int i = 0; i < sizeof(TLM_SUBSCRIPTION_ARR)/sizeof(uint32); i++){
-    status = CFE_SB_Subscribe(CFE_SB_ValueToMsgId(TLM_SUBSCRIPTION_ARR[i]), TELECOM_data.tlm_pipe);
+    status = CFE_SB_SubscribeEx(CFE_SB_ValueToMsgId(TLM_SUBSCRIPTION_ARR[i]), TELECOM_data.tlm_pipe, TELECOM_data.tlmpipe, CFE_SB_DEFAULT_QOS, 24); 
     if (status != CFE_SUCCESS){
       CFE_EVS_SendEvent(TELECOM_SUBSCRIPTION_ERR_EID, CFE_EVS_EventType_ERROR,
                         "TELECOM: Faild to subscribe to %d,  RC = 0x%08lX",TLM_SUBSCRIPTION_ARR[i], (unsigned long)status);
